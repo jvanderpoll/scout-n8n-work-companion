@@ -1,0 +1,4828 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scout for n8n</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --muted: #666666;
+        --line: #dedede;
+        --paper: #f7f5ef;
+        --panel: #ffffff;
+        --pink: #f9d9e1;
+        --pink-soft: #fff0f4;
+        --pink-strong: #ff9aad;
+        --pink-deep: #3a2024;
+        --leaf: #8fbf67;
+        --leaf-dark: #486f3d;
+        --grass: #cfe6a8;
+        --clay: #c97643;
+        --clay-dark: #6d3f2d;
+        --sky: #5da7d9;
+        --paper-warm: #fff3d6;
+        --cream: #fff8ea;
+        --red: #ff4f3e;
+        --blue: #2f6df6;
+        --green: #168f63;
+        --yellow: #f5bd25;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 18px 28px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(247, 245, 239, 0.94);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mark {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 3px;
+        flex: 0 0 auto;
+      }
+
+      .mark span {
+        border-radius: 50%;
+        background: var(--red);
+      }
+
+      .mark span:nth-child(2),
+      .mark span:nth-child(4),
+      .mark span:nth-child(6),
+      .mark span:nth-child(8) {
+        background: #1f1f1f;
+        border-radius: 2px;
+        transform: scaleY(0.36);
+        align-self: center;
+      }
+
+      .scout-face {
+        position: relative;
+        width: 32px;
+        height: 24px;
+        border: 3px solid var(--ink);
+        border-radius: 8px 8px 10px 10px;
+        background: #fbfbfb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: -3px 3px 0 var(--pink-strong);
+      }
+
+      .scout-face::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: -16px;
+        width: 5px;
+        height: 14px;
+        background: var(--ink);
+        border-radius: 2px 2px 0 0;
+        transform: translateX(-50%);
+        box-shadow: -2px 2px 0 var(--pink-strong);
+      }
+
+      .scout-face::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: -21px;
+        width: 9px;
+        height: 7px;
+        background: var(--ink);
+        border-radius: 3px;
+        transform: translateX(-50%);
+        box-shadow: -2px 2px 0 var(--pink-strong);
+      }
+
+      .scout-eye {
+        display: block;
+        width: 5px;
+        height: 12px;
+        border-radius: 2px;
+        background: var(--ink);
+        animation: blink 4.4s infinite;
+      }
+
+      .scout-face.off .scout-eye {
+        height: 2px;
+        animation: none;
+      }
+
+      .brand-scout-logo {
+        flex: 0 0 auto;
+        width: 31px;
+        height: 23px;
+        margin-top: 5px;
+        transform: translateY(1px);
+      }
+
+      .brand-scout-logo::before {
+        top: -14px;
+        height: 13px;
+      }
+
+      .brand-scout-logo::after {
+        top: -19px;
+      }
+
+      @keyframes blink {
+        0%,
+        92%,
+        100% {
+          transform: scaleY(1);
+        }
+
+        95% {
+          transform: scaleY(0.15);
+        }
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.2;
+        font-weight: 720;
+      }
+
+      .brand p {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .switcher {
+        position: fixed;
+        right: 24px;
+        bottom: 18px;
+        z-index: 100;
+        transform: none;
+        display: inline-grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.16);
+      }
+
+      .switcher button {
+        min-width: 96px;
+        border: 0;
+        border-radius: 999px;
+        padding: 8px 14px;
+        color: var(--muted);
+        background: transparent;
+        cursor: pointer;
+      }
+
+      .switcher button.active {
+        color: var(--panel);
+        background: var(--ink);
+      }
+
+      main {
+        display: grid;
+        min-height: 0;
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.active {
+        display: grid;
+      }
+
+      .deck {
+        grid-template-columns: minmax(0, 1fr);
+        min-height: 0;
+      }
+
+      .slide-stage {
+        padding: 28px 28px 92px;
+        display: grid;
+        place-items: center;
+        min-width: 0;
+      }
+
+      .slide {
+        width: min(100%, 1180px);
+        aspect-ratio: 16 / 9;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.09);
+        padding: clamp(32px, 5vw, 68px);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 30px;
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.2;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .slide h2 {
+        max-width: 960px;
+        margin: 0;
+        font-size: clamp(38px, 5.2vw, 78px);
+        line-height: 0.96;
+        letter-spacing: 0;
+      }
+
+      .title-with-scout {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .title-face {
+        width: clamp(76px, 7.5vw, 112px);
+        height: clamp(56px, 5vw, 76px);
+        border-width: 5px;
+        border-radius: 16px 16px 20px 20px;
+        box-shadow: -6px 6px 0 var(--pink-strong);
+        flex: 0 0 auto;
+      }
+
+      .title-face .scout-eye {
+        width: clamp(10px, 1vw, 15px);
+        height: clamp(25px, 2.2vw, 34px);
+        border-radius: 4px;
+      }
+
+      .title-face::before {
+        top: -31px;
+        width: 8px;
+        height: 28px;
+        box-shadow: -4px 4px 0 var(--pink-strong);
+      }
+
+      .title-face::after {
+        top: -41px;
+        width: 15px;
+        height: 12px;
+        box-shadow: -4px 4px 0 var(--pink-strong);
+      }
+
+      .slide p {
+        margin: 0;
+      }
+
+      .big-copy {
+        align-self: center;
+        display: grid;
+        gap: 22px;
+      }
+
+      .lede {
+        max-width: 800px;
+        color: #333333;
+        font-size: clamp(20px, 2.1vw, 34px);
+        line-height: 1.24;
+      }
+
+      .view-demo-cta {
+        justify-self: start;
+        margin-top: 18px;
+        padding: 24px 42px;
+        border: 2px solid var(--ink);
+        border-radius: 999px;
+        color: #fff;
+        background: var(--ink);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18), -6px 6px 0 var(--pink-strong);
+        cursor: pointer;
+        font-size: clamp(28px, 3vw, 48px);
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .view-demo-cta:hover {
+        transform: translateY(-2px);
+      }
+
+      .columns {
+        align-self: center;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .columns.labs-columns {
+        gap: 16px;
+      }
+
+      .point {
+        min-height: 176px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        display: grid;
+        align-content: start;
+        gap: 12px;
+        background: #fbfbfb;
+      }
+
+      .labs-columns .point {
+        min-height: 138px;
+        padding: 20px;
+      }
+
+      .point.lab-question {
+        background: #fff7fa;
+        border-color: #f0c5d4;
+        box-shadow: inset 0 4px 0 var(--pink-strong);
+      }
+
+      .point small {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 760;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .point strong {
+        font-size: clamp(18px, 1.6vw, 24px);
+        line-height: 1.12;
+      }
+
+      .point span {
+        color: #4d4d4d;
+        font-size: clamp(14px, 1.2vw, 18px);
+        line-height: 1.34;
+      }
+
+      .diagram {
+        align-self: center;
+        display: grid;
+        grid-template-columns: 1fr 42px 1fr 42px 1fr;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .node {
+        min-height: 210px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        padding: 24px;
+        background: var(--panel);
+        display: grid;
+        align-content: center;
+        gap: 10px;
+      }
+
+      .node small {
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .node strong {
+        font-size: clamp(22px, 2.3vw, 34px);
+        line-height: 1.03;
+      }
+
+      .arrow {
+        position: relative;
+        height: 2px;
+        background: var(--ink);
+      }
+
+      .arrow::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        border-top: 2px solid var(--ink);
+        border-right: 2px solid var(--ink);
+        transform: translateY(-50%) rotate(45deg);
+      }
+
+      .checks {
+        align-self: center;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .check {
+        min-height: 104px;
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        gap: 14px;
+        align-items: start;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfbfb;
+        font-size: clamp(17px, 1.4vw, 22px);
+        line-height: 1.24;
+      }
+
+      .dot {
+        width: 14px;
+        height: 14px;
+        margin-top: 6px;
+        border-radius: 50%;
+        background: var(--red);
+      }
+
+      .test-plan {
+        align-self: center;
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 26px;
+        align-items: stretch;
+      }
+
+      .quote {
+        display: grid;
+        align-content: center;
+        gap: 18px;
+        padding: 28px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .quote p {
+        font-size: clamp(24px, 2.6vw, 40px);
+        line-height: 1.1;
+        font-weight: 720;
+      }
+
+      .quote span {
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      .steps {
+        display: grid;
+        gap: 12px;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 14px;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfbfb;
+        font-size: clamp(16px, 1.4vw, 21px);
+      }
+
+      .num {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: #fff;
+        background: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .slide-foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .icon-button {
+        width: 38px;
+        height: 38px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: var(--panel);
+        cursor: pointer;
+      }
+
+      .demo-shell {
+        padding: 28px;
+        display: grid;
+        place-items: center;
+      }
+
+      .demo-card {
+        width: min(100%, 1180px);
+        min-height: min(720px, calc(100vh - 130px));
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.09);
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        overflow: hidden;
+      }
+
+      .demo-sidebar {
+        border-right: 1px solid var(--line);
+        background: #fbfbfb;
+        padding: 24px;
+        display: grid;
+        align-content: start;
+        gap: 18px;
+      }
+
+      .demo-sidebar h2 {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.06;
+      }
+
+      .signal {
+        display: grid;
+        grid-template-columns: 42px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .pulse {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background:
+          radial-gradient(circle at center, var(--red) 0 34%, transparent 35%),
+          conic-gradient(var(--red), var(--yellow), var(--green), var(--blue), var(--red));
+      }
+
+      .signal strong {
+        display: block;
+        font-size: 15px;
+      }
+
+      .signal span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .demo-main {
+        padding: 34px;
+        display: grid;
+        gap: 22px;
+        align-content: start;
+      }
+
+      .offer {
+        padding: 24px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        display: grid;
+        gap: 14px;
+      }
+
+      .offer h3 {
+        margin: 0;
+        font-size: clamp(28px, 3vw, 46px);
+        line-height: 1.03;
+      }
+
+      .offer p {
+        margin: 0;
+        max-width: 700px;
+        color: #333;
+        font-size: 19px;
+        line-height: 1.38;
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .mini-panel {
+        min-height: 190px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfbfb;
+      }
+
+      .mini-panel h4 {
+        margin: 0 0 12px;
+        font-size: 13px;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+
+      .mini-panel p {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.36;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .primary,
+      .secondary {
+        border-radius: 999px;
+        padding: 11px 16px;
+        cursor: pointer;
+      }
+
+      .primary {
+        border: 1px solid var(--ink);
+        color: #fff;
+        background: var(--ink);
+      }
+
+      .secondary {
+        border: 1px solid var(--line);
+        color: var(--ink);
+        background: var(--panel);
+      }
+
+      .storyline {
+        width: min(100%, 1240px);
+        display: grid;
+        gap: 18px;
+      }
+
+      .storyline-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: end;
+        padding: 6px 2px 2px;
+      }
+
+      .storyline-head h2 {
+        margin: 0;
+        font-size: clamp(34px, 4vw, 58px);
+        line-height: 0.98;
+      }
+
+      .storyline-head p {
+        max-width: 520px;
+        margin: 0;
+        color: #444;
+        font-size: 18px;
+        line-height: 1.34;
+      }
+
+      .story-grid {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(180px, 1fr));
+        gap: 14px;
+      }
+
+      .scene {
+        min-height: 520px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 14px;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.07);
+      }
+
+      .scene-title {
+        display: grid;
+        gap: 7px;
+      }
+
+      .scene-title small {
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .scene-title strong {
+        font-size: 20px;
+        line-height: 1.08;
+      }
+
+      .scene-visual {
+        min-height: 330px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfbfb;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .scene-caption {
+        color: #3f3f3f;
+        font-size: 14px;
+        line-height: 1.32;
+      }
+
+      .desktop-chrome {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        border-bottom: 1px solid var(--line);
+        background: #efefef;
+      }
+
+      .chrome-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #b9b9b9;
+      }
+
+      .work-canvas {
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .sheet {
+        display: grid;
+        gap: 5px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 0.8fr 0.7fr;
+        gap: 5px;
+      }
+
+      .cell {
+        height: 20px;
+        border: 1px solid #dadada;
+        background: var(--panel);
+      }
+
+      .cell.hot {
+        background: #ffe7ed;
+        border-color: var(--pink-strong);
+      }
+
+      .doc {
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--panel);
+        display: grid;
+        gap: 7px;
+      }
+
+      .line {
+        height: 8px;
+        border-radius: 999px;
+        background: #d8d8d8;
+      }
+
+      .line.short {
+        width: 58%;
+      }
+
+      .toolbar {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+        transform: translateX(-50%);
+        width: max-content;
+        min-width: 150px;
+        padding: 18px 10px 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .prompt {
+        margin: 54px 14px 0;
+        padding: 16px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        background: var(--panel);
+        display: grid;
+        gap: 10px;
+      }
+
+      .prompt strong {
+        font-size: 21px;
+        line-height: 1.08;
+      }
+
+      .prompt p {
+        margin: 0;
+        color: #424242;
+        font-size: 14px;
+        line-height: 1.32;
+      }
+
+      .pill-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        padding: 6px 8px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        font-size: 11px;
+      }
+
+      .prompt-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .prompt-action {
+        padding: 7px 9px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--panel);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .prompt-action.with-face {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .prompt-action .scout-face {
+        width: 22px;
+        height: 17px;
+        border-width: 1px;
+        border-radius: 5px 5px 7px 7px;
+        box-shadow: -2px 2px 0 var(--pink-strong);
+      }
+
+      .prompt-action .scout-face::before {
+        top: -9px;
+        width: 3px;
+        height: 8px;
+        box-shadow: -1px 1px 0 var(--pink-strong);
+      }
+
+      .prompt-action .scout-face::after {
+        top: -13px;
+        width: 6px;
+        height: 5px;
+        box-shadow: -1px 1px 0 var(--pink-strong);
+      }
+
+      .prompt-action .scout-eye {
+        width: 3px;
+        height: 8px;
+      }
+
+      .prompt-action.primary-action {
+        color: #fff;
+        border-color: var(--clay-dark);
+        background: var(--clay);
+      }
+
+      .review-panel {
+        margin: 12px;
+        padding: 14px;
+        border-radius: 8px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        display: grid;
+        gap: 12px;
+      }
+
+      .preview-box {
+        min-height: 92px;
+        padding: 10px;
+        border-radius: 6px;
+        background: #f7f7f7;
+        display: grid;
+        gap: 6px;
+      }
+
+      .source-list {
+        display: grid;
+        gap: 7px;
+      }
+
+      .source {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+
+      .source::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+
+      .correction {
+        margin: 14px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .choice {
+        padding: 11px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 13px;
+      }
+
+      .choice.on {
+        border-color: var(--green);
+        background: #effaf5;
+      }
+
+      .workflow {
+        margin: 18px 12px;
+        min-height: 270px;
+        position: relative;
+      }
+
+      .workflow-node {
+        position: absolute;
+        width: 106px;
+        min-height: 58px;
+        padding: 9px;
+        border: 1px solid var(--ink);
+        border-radius: 8px;
+        background: var(--panel);
+        display: grid;
+        align-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .workflow-node:nth-child(1) {
+        left: 0;
+        top: 22px;
+      }
+
+      .workflow-node:nth-child(2) {
+        left: 96px;
+        top: 106px;
+      }
+
+      .workflow-node:nth-child(3) {
+        right: 0;
+        top: 22px;
+      }
+
+      .workflow-node:nth-child(4) {
+        right: 28px;
+        bottom: 12px;
+        border-color: var(--red);
+      }
+
+      .assistant-panel {
+        margin: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .n8n-bar {
+        height: 34px;
+        border-radius: 8px;
+        background: #111;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .assistant-message,
+      .user-message {
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.28;
+      }
+
+      .assistant-message {
+        background: var(--panel);
+        border: 1px solid var(--line);
+      }
+
+      .user-message {
+        margin-left: 28px;
+        color: #fff;
+        background: var(--ink);
+      }
+
+      .publish-card {
+        margin: 14px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        display: grid;
+        gap: 12px;
+      }
+
+      .status-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #effaf5;
+        color: #106944;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .saved-time {
+        display: grid;
+        place-items: center;
+        min-height: 150px;
+        border-radius: 8px;
+        background: #fff0f4;
+        color: #9f2f22;
+        text-align: center;
+        font-weight: 800;
+        font-size: 42px;
+        line-height: 0.95;
+      }
+
+      .saved-time span {
+        display: block;
+        margin-top: 8px;
+        color: #3d3d3d;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .prototype-shell {
+        height: calc(100vh - 72px);
+        padding: 20px 24px 96px;
+        display: grid;
+        place-items: center;
+      }
+
+      .prototype {
+        position: relative;
+        width: min(100%, 1500px);
+        height: 100%;
+        min-height: 0;
+        background: #111;
+        border: 1px solid rgba(0, 0, 0, 0.18);
+        border-radius: 22px;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
+        display: block;
+        overflow: hidden;
+        padding: 10px;
+      }
+
+      .prototype-rail {
+        display: none;
+      }
+
+      .prototype-rail h2 {
+        display: none;
+      }
+
+      .prototype-rail p {
+        display: none;
+      }
+
+      .prototype-rail .signal {
+        display: none;
+      }
+
+      .demo-steps {
+        display: flex;
+        gap: 6px;
+        align-content: start;
+        justify-content: center;
+        min-width: 0;
+      }
+
+      .demo-step-button {
+        width: 24px;
+        height: 24px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        padding: 0;
+        background: var(--panel);
+        color: var(--muted);
+        text-align: center;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+
+      .demo-step-button.active {
+        border-color: var(--ink);
+        color: var(--ink);
+        box-shadow: -2px 2px 0 var(--pink-strong);
+      }
+
+      .demo-step-button small {
+        display: block;
+        text-transform: uppercase;
+        font-size: 10px;
+        font-weight: 800;
+      }
+
+      .demo-step-button strong {
+        display: none;
+        font-size: 15px;
+        line-height: 1.18;
+      }
+
+      .prototype-main {
+        height: 100%;
+        min-width: 0;
+        display: block;
+      }
+
+      .prototype-header {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        z-index: 99;
+        transform: translateX(-50%);
+        display: block;
+        width: min(520px, 42vw);
+        padding: 10px 12px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 14px 38px rgba(0, 0, 0, 0.12);
+      }
+
+      .prototype-header small {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+      }
+
+      .prototype-header h3 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.06;
+      }
+
+      .privacy-badge {
+        display: none;
+      }
+
+      .prototype-body {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        padding: 0;
+        background: #111;
+        display: block;
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .prototype-footer {
+        display: none;
+      }
+
+      .prototype-footer:hover {
+        opacity: 1;
+      }
+
+      .prototype-footer p {
+        display: none;
+      }
+
+      .demo-button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .demo-button {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 11px;
+        background: var(--panel);
+        color: var(--ink);
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .demo-button.primary {
+        border-color: var(--clay-dark);
+        color: #fff;
+        background: var(--clay);
+      }
+
+      .demo-button:disabled {
+        cursor: default;
+        opacity: 0.35;
+      }
+
+      .demo-window {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        border: 0;
+        border-radius: 14px;
+        background:
+          radial-gradient(circle at 18% 18%, rgba(93, 167, 217, 0.24), transparent 22%),
+          radial-gradient(circle at 82% 24%, rgba(245, 189, 37, 0.24), transparent 22%),
+          linear-gradient(135deg, #e9eef4 0%, #f6f0e2 48%, #d8e7c4 100%);
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+      }
+
+      .window-bar {
+        height: 30px;
+        padding: 0 12px 0 84px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(18px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .scout-menu {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 10px 5px 6px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 999px;
+        background: rgba(255, 248, 234, 0.82);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      }
+
+      .scout-menu .scout-face {
+        transform: scale(0.62);
+        margin-top: 5px;
+      }
+
+      .window-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .window-apps {
+        position: relative;
+        z-index: 10;
+        height: calc(100% - 30px);
+        padding: 0;
+      }
+
+      .app-panel {
+        z-index: 10;
+        position: absolute;
+        min-height: 0;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 16px;
+        background: rgba(255, 248, 234, 0.9);
+        backdrop-filter: blur(18px);
+        padding: 16px;
+        display: grid;
+        align-content: start;
+        gap: 14px;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      }
+
+      .app-panel.sheet-window {
+        left: 78px;
+        top: 132px;
+        width: min(54vw, 820px);
+        height: min(48vh, 470px);
+      }
+
+      .app-panel.doc-window {
+        right: 78px;
+        top: 392px;
+        width: min(38vw, 590px);
+        height: min(34vh, 360px);
+      }
+
+      .app-panel.notes-window {
+        right: 92px;
+        top: 124px;
+        width: min(34vw, 500px);
+        height: 238px;
+        background: rgba(255, 243, 214, 0.94);
+      }
+
+      .app-titlebar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: -4px -4px 4px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+
+      .app-titlebar span {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .app-panel h4 {
+        margin: 0;
+        font-size: 14px;
+        color: var(--clay-dark);
+      }
+
+      .sheet-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        overflow: hidden;
+        border: 1px solid #d9cfae;
+        border-radius: 8px;
+      }
+
+      .sheet-table th,
+      .sheet-table td {
+        height: 34px;
+        border-right: 1px solid #d9cfae;
+        border-bottom: 1px solid #d9cfae;
+        padding: 7px 8px;
+        background: #fffaf0;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sheet-table th {
+        color: var(--clay-dark);
+        background: #f4e5be;
+        font-size: 11px;
+        text-align: left;
+        text-transform: uppercase;
+      }
+
+      .sheet-table tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .sheet-table th:last-child,
+      .sheet-table td:last-child {
+        border-right: 0;
+      }
+
+      .sheet-table .hot {
+        border-color: #e1a53d;
+        background: #fff1bd;
+      }
+
+      .sheet-table .selected {
+        background: #e7f2ff;
+        box-shadow: inset 0 0 0 2px var(--sky);
+      }
+
+      .sheet-table .muted-cell {
+        color: #777;
+      }
+
+      .draft-lines {
+        display: grid;
+        gap: 10px;
+      }
+
+      .draft-line {
+        height: 13px;
+        border-radius: 999px;
+        background: #b9cee0;
+      }
+
+      .draft-line.short {
+        width: 62%;
+      }
+
+      .doc-content {
+        display: grid;
+        gap: 12px;
+        color: #2d2d2d;
+        font-size: 14px;
+        line-height: 1.42;
+      }
+
+      .doc-content h5 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .doc-content p {
+        margin: 0;
+      }
+
+      .doc-content ul {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .doc-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e2d8bf;
+        color: #766a58;
+        font-size: 12px;
+      }
+
+      .typing-cursor {
+        display: inline-block;
+        width: 2px;
+        height: 1em;
+        margin-left: 2px;
+        vertical-align: -2px;
+        background: var(--clay);
+        animation: blink-cursor 1s steps(1) infinite;
+      }
+
+      @keyframes blink-cursor {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .copying-note {
+        display: inline-block;
+        padding: 2px 5px;
+        border-radius: 5px;
+        background: #fff1bd;
+      }
+
+      .note-thread {
+        display: grid;
+        gap: 9px;
+      }
+
+      .note-msg {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 9px;
+        align-items: start;
+        padding: 9px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        font-size: 13px;
+        line-height: 1.32;
+      }
+
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: var(--sky);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .note-msg strong {
+        display: block;
+        margin-bottom: 2px;
+        color: #2c2c2c;
+      }
+
+      .scout-dock {
+        z-index: 22;
+        position: absolute;
+        left: 50%;
+        bottom: 72px;
+        transform: translateX(-50%);
+        padding: 18px 13px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--cream);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.14);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+      }
+
+      .scout-popover {
+        z-index: 60;
+        position: absolute;
+        right: 18px;
+        top: 42px;
+        width: min(460px, calc(100% - 84px));
+        padding: 18px;
+        border: 2px solid var(--clay-dark);
+        border-radius: 8px;
+        background: var(--paper-warm);
+        box-shadow: -6px 6px 0 var(--clay);
+        display: grid;
+        gap: 12px;
+      }
+
+      .scout-popover h4 {
+        margin: 0;
+        font-size: 25px;
+        line-height: 1.04;
+      }
+
+      .scout-popover p {
+        margin: 0;
+        color: #3d3d3d;
+        font-size: 15px;
+        line-height: 1.34;
+      }
+
+      .scout-brand-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #766a58;
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .n8n-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 42px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 999px;
+        color: #fff;
+        background: #ff4f3e;
+        box-shadow: -2px 2px 0 rgba(0, 0, 0, 0.16);
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .scout-popover.compact {
+        width: min(340px, calc(100% - 36px));
+        padding: 14px;
+      }
+
+      .scout-popover.compact h4 {
+        font-size: 20px;
+      }
+
+      .scout-popover.expanded {
+        width: min(560px, calc(100% - 36px));
+      }
+
+      .idea-popover {
+        right: 72px;
+        width: min(520px, calc(100% - 72px));
+      }
+
+      .idea-panel {
+        position: absolute;
+        left: 50%;
+        top: 47%;
+        z-index: 32;
+        width: min(840px, calc(100% - 104px));
+        transform: translate(-50%, -50%);
+        padding: 26px;
+        border-radius: 20px;
+        color: #1f2428;
+        background: rgba(255, 248, 234, 0.96);
+        border: 1px solid rgba(0, 0, 0, 0.16);
+        box-shadow: 0 28px 76px rgba(0, 0, 0, 0.22);
+        display: grid;
+        gap: 18px;
+      }
+
+      .idea-panel .final-success-close {
+        right: 14px;
+        top: 14px;
+      }
+
+      .idea-panel-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding-right: 40px;
+      }
+
+      .idea-panel-head .scout-face {
+        flex: 0 0 auto;
+      }
+
+      .idea-panel-head small {
+        color: #8f6531;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .idea-panel-head h4 {
+        margin: 4px 0 0;
+        font-size: clamp(28px, 3.1vw, 44px);
+        line-height: 1;
+      }
+
+      .idea-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .idea-card {
+        display: grid;
+        grid-template-columns: 92px 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.76);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+      }
+
+      .idea-type {
+        min-height: 50px;
+        border-radius: 12px;
+        color: #fff;
+        background: #0d9f75;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .idea-type.agent {
+        background: #6f1d7a;
+      }
+
+      .idea-type.workflow {
+        background: #2f70ee;
+      }
+
+      .idea-card strong {
+        display: block;
+        font-size: 18px;
+        line-height: 1.1;
+      }
+
+      .idea-card p {
+        margin: 5px 0 0;
+        color: #554b42;
+        font-size: 14px;
+        line-height: 1.32;
+      }
+
+      .idea-card-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+      }
+
+      .finding-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .finding-card {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #d9cfae;
+        background: #fffaf0;
+        display: grid;
+        gap: 5px;
+        font-size: 13px;
+        line-height: 1.28;
+      }
+
+      .finding-card strong {
+        color: var(--clay-dark);
+      }
+
+      .draft-review {
+        position: relative;
+        height: calc(100% - 30px);
+        padding: 0;
+      }
+
+      .sample-output,
+      .context-card,
+      .correction-card {
+        position: absolute;
+        z-index: 10;
+        min-height: min(62vh, 560px);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 248, 234, 0.92);
+        backdrop-filter: blur(18px);
+        padding: 18px;
+        display: grid;
+        gap: 12px;
+        align-content: start;
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      }
+
+      .sample-output {
+        left: 86px;
+        top: 128px;
+        width: min(48vw, 670px);
+      }
+
+      .context-card {
+        right: 86px;
+        top: 174px;
+        width: min(36vw, 480px);
+      }
+
+      .correction-card {
+        left: 86px;
+        top: 138px;
+        width: min(42vw, 560px);
+      }
+
+      .sample-output h4,
+      .context-card h4,
+      .correction-card h4 {
+        margin: 0;
+        font-size: 15px;
+        color: var(--clay-dark);
+      }
+
+      .sample-copy {
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #fffaf0;
+      }
+
+      .sample-copy strong {
+        font-size: 17px;
+      }
+
+      .sample-copy p {
+        margin: 0;
+        color: #3d3d3d;
+        font-size: 14px;
+        line-height: 1.38;
+      }
+
+      .context-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .context-item {
+        padding: 10px;
+        border: 1px solid #d9cfae;
+        border-radius: 8px;
+        background: #fffaf0;
+        font-size: 13px;
+      }
+
+      .toggle-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .toggle-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #d9cfae;
+        border-radius: 8px;
+        background: #fffaf0;
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-size: 14px;
+        text-align: left;
+      }
+
+      .toggle-row.active {
+        border-color: var(--green);
+        background: #e6f4cf;
+      }
+
+      .n8n-demo {
+        position: relative;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        height: calc(100% - 30px);
+        min-height: 0;
+      }
+
+      .n8n-canvas {
+        position: relative;
+        border-right: 1px solid var(--line);
+        background:
+          linear-gradient(rgba(72, 111, 61, 0.14) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(72, 111, 61, 0.14) 1px, transparent 1px),
+          #fff8ea;
+        background-size: 24px 24px;
+      }
+
+      .n8n-node {
+        position: absolute;
+        width: 148px;
+        min-height: 70px;
+        padding: 12px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        background: var(--paper-warm);
+        box-shadow: -3px 3px 0 var(--clay);
+        display: grid;
+        align-content: center;
+        gap: 4px;
+        text-align: center;
+      }
+
+      .n8n-node small {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .n8n-node strong {
+        font-size: 14px;
+        line-height: 1.14;
+      }
+
+      .n8n-node.one {
+        left: 42px;
+        top: 76px;
+      }
+
+      .n8n-node.two {
+        left: 250px;
+        top: 190px;
+      }
+
+      .n8n-node.three {
+        left: 476px;
+        top: 86px;
+      }
+
+      .n8n-node.four {
+        left: 420px;
+        bottom: 76px;
+      }
+
+      .assistant-side {
+        padding: 18px;
+        display: grid;
+        align-content: start;
+        gap: 12px;
+        background: #e8f3db;
+      }
+
+      .assistant-side h4 {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .chat-bubble {
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1.34;
+      }
+
+      .chat-bubble.user {
+        color: #fff;
+        background: var(--clay-dark);
+      }
+
+      .chat-bubble.ai {
+        border: 1px solid #d9cfae;
+        background: var(--paper-warm);
+      }
+
+      .browser-window {
+        position: absolute;
+        inset: 48px 42px 88px;
+        z-index: 12;
+        overflow: hidden;
+        border-radius: 14px;
+        background: #111;
+        border: 1px solid rgba(0, 0, 0, 0.28);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.32);
+      }
+
+      .browser-window.click-to-close {
+        cursor: pointer;
+      }
+
+      .browser-toolbar {
+        height: 38px;
+        padding: 0 14px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        background: #222;
+        border-bottom: 1px solid #303030;
+        color: #cfcfcf;
+      }
+
+      .browser-address {
+        justify-self: center;
+        width: min(560px, 70%);
+        padding: 7px 14px;
+        border-radius: 999px;
+        color: #d8d8d8;
+        background: #303030;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .browser-tools {
+        display: flex;
+        gap: 8px;
+        color: #8c8c8c;
+        font-size: 12px;
+      }
+
+      .browser-close-action {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border: 1px solid #484848;
+        border-radius: 50%;
+        color: #d8d8d8;
+        background: #2f2f2f;
+        cursor: pointer;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .browser-close-action:hover {
+        color: #fff;
+        border-color: #626262;
+        background: #3a3a3a;
+      }
+
+      .n8n-webapp {
+        height: calc(100% - 38px);
+        display: grid;
+        grid-template-columns: 190px minmax(330px, 35%) 1fr;
+        color: #f4f4f4;
+        background: #141414;
+      }
+
+      .n8n-left-nav {
+        border-right: 1px solid #303030;
+        background: #262626;
+        padding: 18px 12px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 18px;
+      }
+
+      .n8n-logo-row {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-weight: 850;
+      }
+
+      .n8n-logo-mark {
+        width: 28px;
+        height: 18px;
+        border-radius: 999px;
+        background: #ff4f72;
+        box-shadow: 10px 0 0 #ff4f72, 20px 0 0 #ff4f72;
+      }
+
+      .n8n-nav-list {
+        display: grid;
+        align-content: start;
+        gap: 8px;
+      }
+
+      .n8n-nav-item {
+        padding: 9px 10px;
+        border-radius: 7px;
+        color: #d8d8d8;
+        font-size: 13px;
+      }
+
+      .n8n-nav-item.active {
+        color: #fff;
+        background: #333;
+      }
+
+      .n8n-assistant-panel {
+        min-width: 0;
+        border-right: 1px solid #303030;
+        background: #171717;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .assistant-top {
+        height: 58px;
+        padding: 0 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #303030;
+      }
+
+      .assistant-top strong {
+        font-size: 15px;
+      }
+
+      .assistant-top span {
+        color: #a77bff;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .chat-stack {
+        min-height: 0;
+        padding: 28px 24px;
+        display: grid;
+        align-content: start;
+        gap: 14px;
+        overflow: auto;
+      }
+
+      .n8n-chat-bubble {
+        max-width: 94%;
+        padding: 13px 14px;
+        border-radius: 10px;
+        color: #e8e8e8;
+        background: #242424;
+        border: 1px solid #343434;
+        font-size: 14px;
+        line-height: 1.42;
+      }
+
+      .n8n-chat-bubble.user {
+        justify-self: end;
+        color: #fff;
+        background: #5b3fd6;
+        border-color: #7055f0;
+      }
+
+      .n8n-chat-bubble strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #fff;
+      }
+
+      .proposal-card {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 8px;
+        background: #2c2c2c;
+        border: 1px solid #464646;
+      }
+
+      .proposal-card span {
+        color: #bdbdbd;
+        font-size: 12px;
+      }
+
+      .assistant-input {
+        margin: 0 24px 22px;
+        padding: 12px;
+        min-height: 74px;
+        border-radius: 10px;
+        color: #a8a8a8;
+        background: #282828;
+        border: 1px solid #3a3a3a;
+        display: grid;
+        align-items: end;
+      }
+
+      .assistant-input-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .send-square {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 32px;
+        border: 0;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: #c76b22;
+        box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.22);
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .workflow-side {
+        min-width: 0;
+        display: grid;
+        grid-template-rows: 86px 1fr 44px;
+        background: #111;
+      }
+
+      .workflow-top {
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid #2a2a2a;
+        background: #242424;
+      }
+
+      .workflow-top strong {
+        display: block;
+        margin-top: 4px;
+        font-size: 19px;
+      }
+
+      .workflow-top small {
+        color: #b8b8b8;
+        font-size: 13px;
+      }
+
+      .publish-button,
+      .execute-button {
+        border: 1px solid #555;
+        border-radius: 8px;
+        padding: 9px 13px;
+        color: #fff;
+        background: #2f2f2f;
+        font-weight: 800;
+      }
+
+      .publish-button.published-state {
+        border-color: rgba(0, 200, 83, 0.45);
+        color: #d8ffe5;
+        background: rgba(0, 200, 83, 0.16);
+        cursor: default;
+      }
+
+      .execute-button {
+        position: absolute;
+        left: 50%;
+        bottom: 24px;
+        z-index: 3;
+        transform: translateX(-50%);
+        border-color: #4a4a4a;
+      }
+
+      .canvas-dark {
+        position: relative;
+        overflow: hidden;
+        background:
+          repeating-linear-gradient(135deg, #181818 0 10px, #101010 10px 20px),
+          #121212;
+      }
+
+      .canvas-dark::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+        background-size: 18px 18px;
+      }
+
+      .canvas-dark.published {
+        background: #121212;
+      }
+
+      .canvas-dark.published::before {
+        background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+      }
+
+      .workflow-map {
+        position: absolute;
+        inset: 48px 22px 86px;
+        z-index: 2;
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        gap: 22px;
+      }
+
+      .workflow-row {
+        width: min(100%, 980px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+      }
+
+      .workflow-map.long .workflow-row {
+        width: 128%;
+        transform: scale(0.76);
+        transform-origin: center;
+      }
+
+      .node-wrap {
+        position: relative;
+        width: 112px;
+        display: grid;
+        justify-items: center;
+        gap: 7px;
+        text-align: center;
+      }
+
+      .workflow-node-dark {
+        position: relative;
+        width: 76px;
+        height: 76px;
+        border-radius: 12px;
+        color: #f4f4f4;
+        background: #292929;
+        border: 2px solid #7b61ff;
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+        display: grid;
+        place-items: center;
+      }
+
+      .workflow-node-dark.trigger,
+      .workflow-node-dark.filter,
+      .workflow-node-dark.code {
+        border-color: #00c853;
+      }
+
+      .workflow-node-dark.sheet {
+        border-color: #8d5cff;
+      }
+
+      .workflow-node-dark.slack,
+      .workflow-node-dark.gmail {
+        border-color: #8d5cff;
+      }
+
+      .workflow-node-dark.notify {
+        border-color: #00c853;
+      }
+
+      .workflow-node-dark.agent {
+        width: 90px;
+        border-color: #8d5cff;
+      }
+
+      .node-icon {
+        width: 44px;
+        height: 38px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: #4b4b4b;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .node-icon.trigger {
+        border: 2px solid #d8d8d8;
+        border-radius: 50%;
+        color: #d8d8d8;
+        background: transparent;
+        font-size: 12px;
+      }
+
+      .node-icon.sheet {
+        background: #23a455;
+      }
+
+      .node-icon.filter {
+        background: #2768dd;
+      }
+
+      .node-icon.slack {
+        color: #111;
+        background: #f4c542;
+      }
+
+      .node-icon.code {
+        background: #c97643;
+      }
+
+      .node-icon.agent {
+        color: #111;
+        background: #d8d8d8;
+        font-size: 12px;
+      }
+
+      .node-icon.gmail {
+        background: #d74638;
+      }
+
+      .node-icon.notify {
+        color: #111;
+        background: #9adf90;
+      }
+
+      .node-status {
+        position: absolute;
+        right: 7px;
+        bottom: 6px;
+        color: #00c853;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .node-status.warn {
+        color: #ff6a4f;
+      }
+
+      .node-port {
+        position: absolute;
+        top: 50%;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid #6a6a6a;
+        background: #2b2b2b;
+        transform: translateY(-50%);
+      }
+
+      .node-port.left {
+        left: -7px;
+      }
+
+      .node-port.right {
+        right: -7px;
+      }
+
+      .node-wrap strong {
+        max-width: 140px;
+        color: #f2f2f2;
+        font-size: 12px;
+        line-height: 1.18;
+      }
+
+      .node-wrap small {
+        color: #a4a4a4;
+        font-size: 10px;
+        line-height: 1.15;
+      }
+
+      .workflow-wire {
+        position: relative;
+        flex: 1 1 26px;
+        max-width: 44px;
+        min-width: 18px;
+        height: 2px;
+        margin: -42px -2px 0;
+        background: linear-gradient(90deg, #00c853, #8d5cff);
+      }
+
+      .workflow-wire::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 50%;
+        bottom: 6px;
+        transform: translateX(-50%);
+        width: max-content;
+        color: #8f8f8f;
+        font-size: 10px;
+      }
+
+      .model-branch {
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        margin-top: -6px;
+        color: #a4a4a4;
+      }
+
+      .workflow-map.long .model-branch {
+        margin-top: -34px;
+        transform: scale(0.9);
+      }
+
+      .model-line {
+        width: 2px;
+        height: 34px;
+        background: linear-gradient(#4b4b4b, transparent);
+      }
+
+      .model-pill {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #8f8f8f;
+        background: #2a2a2a;
+        border: 1px solid #585858;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .model-branch span:last-child {
+        color: #d8d8d8;
+        font-size: 12px;
+      }
+
+      .run-result {
+        position: absolute;
+        right: 28px;
+        top: 28px;
+        z-index: 3;
+        width: 250px;
+        padding: 14px;
+        border-radius: 10px;
+        color: #e8e8e8;
+        background: #202020;
+        border: 1px solid #3c3c3c;
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.26);
+        font-size: 13px;
+        line-height: 1.38;
+      }
+
+      .run-result strong {
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .workflow-logs {
+        padding: 12px 18px;
+        border-top: 1px solid #2a2a2a;
+        color: #cfcfcf;
+        background: #171717;
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .mail-window {
+        left: 110px;
+        top: 72px;
+        width: calc(100% - 220px);
+        height: calc(100% - 180px);
+      }
+
+      .mail-window .real-window-body {
+        padding: 0;
+      }
+
+      .mail-layout {
+        display: grid;
+        grid-template-columns: 310px 1fr;
+        height: calc(100% - 34px);
+        min-height: 0;
+        background: rgba(255, 255, 255, 0.96);
+      }
+
+      .mail-list {
+        padding: 14px;
+        border-right: 1px solid #d8d8d8;
+        background: #f5f6f7;
+        display: grid;
+        align-content: start;
+        gap: 10px;
+      }
+
+      .mail-list h4,
+      .mail-draft h4 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .mail-item {
+        padding: 12px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid #dfdfdf;
+        display: grid;
+        gap: 5px;
+        font-size: 13px;
+      }
+
+      .mail-item.active {
+        border-color: #2f6df6;
+        box-shadow: inset 3px 0 0 #2f6df6;
+      }
+
+      .mail-item strong {
+        font-size: 14px;
+      }
+
+      .mail-item span {
+        color: #666;
+      }
+
+      .mail-draft {
+        padding: 22px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 18px;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .mail-head {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .mail-head .prompt-actions {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .mail-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        color: #5d5d5d;
+        font-size: 13px;
+      }
+
+      .mail-pill {
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: #eef2f6;
+        border: 1px solid #d5dce5;
+      }
+
+      .draft-paper {
+        overflow: auto;
+        min-height: 0;
+        padding: 18px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid #e1e1e1;
+        font-size: 14px;
+        line-height: 1.46;
+      }
+
+      .draft-paper h5 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .draft-paper p,
+      .draft-paper ul {
+        margin: 0 0 12px;
+      }
+
+      .mail-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+      }
+
+      .mail-actions span {
+        color: #666;
+        font-size: 13px;
+      }
+
+      .time-jump-desktop {
+        background:
+          radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.7), transparent 18%),
+          radial-gradient(circle at 72% 30%, rgba(255, 213, 118, 0.2), transparent 22%),
+          linear-gradient(135deg, #d9e4ef 0%, #f5efe3 42%, #d7e9c1 100%);
+      }
+
+      .time-card {
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        z-index: 18;
+        width: min(520px, calc(100% - 80px));
+        transform: translate(-50%, -50%);
+        padding: 34px 38px;
+        border-radius: 18px;
+        color: #2f241a;
+        text-align: center;
+        background: #fff4d1;
+        border: 1px solid rgba(0, 0, 0, 0.16);
+        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.22);
+      }
+
+      .time-card small {
+        display: block;
+        margin-bottom: 10px;
+        color: #8f6531;
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .time-card strong {
+        display: block;
+        font-size: clamp(34px, 5vw, 62px);
+        line-height: 0.95;
+      }
+
+      .time-card span {
+        display: block;
+        margin-top: 16px;
+        color: #6f5843;
+        font-size: 18px;
+        font-weight: 750;
+      }
+
+      .payoff-demo {
+        position: relative;
+        z-index: 10;
+        height: calc(100% - 30px);
+        padding: 0;
+      }
+
+      .payoff-card {
+        position: absolute;
+        top: 150px;
+        width: min(38vw, 520px);
+        min-height: min(52vh, 460px);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper-warm);
+        padding: 20px;
+        display: grid;
+        align-content: center;
+        gap: 14px;
+      }
+
+      .payoff-card h4 {
+        margin: 0;
+        font-size: 36px;
+        line-height: 0.98;
+      }
+
+      .payoff-card p {
+        margin: 0;
+        color: #3d3d3d;
+        font-size: 17px;
+        line-height: 1.34;
+      }
+
+      .payoff-card.highlight {
+        right: 120px;
+        border-color: var(--clay-dark);
+        box-shadow: -6px 6px 0 var(--clay);
+      }
+
+      .payoff-card:not(.highlight) {
+        left: 120px;
+      }
+
+      .task-strip {
+        margin-top: 4px;
+        padding: 12px;
+        border: 1px solid #d9cfae;
+        border-radius: 8px;
+        background: #fff1bd;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .task-strip span {
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .mac-dock {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+        z-index: 21;
+        transform: translateX(-50%);
+        height: 54px;
+        padding: 8px 12px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.68);
+        backdrop-filter: blur(18px);
+        display: flex;
+        gap: 9px;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+      }
+
+      .dock-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #111;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .desktop-icons {
+        position: absolute;
+        inset: 58px auto 90px 18px;
+        z-index: 5;
+        display: none;
+        align-content: start;
+        gap: 18px;
+        width: 88px;
+      }
+
+      .desktop-icons.right {
+        left: auto;
+        right: 18px;
+      }
+
+      .desktop-icon {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        color: #fff;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.12;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
+      .desktop-glyph {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.62);
+        background: rgba(255, 255, 255, 0.38);
+        backdrop-filter: blur(10px);
+        display: grid;
+        place-items: center;
+        color: #2f4129;
+        font-weight: 900;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      .grass-blade {
+        display: none;
+        position: absolute;
+        z-index: 1;
+        width: 18px;
+        height: 54px;
+        border-radius: 100% 0 100% 0;
+        background: linear-gradient(135deg, rgba(59, 103, 42, 0.8), rgba(117, 155, 81, 0.36));
+        transform: rotate(var(--r, -18deg)) skewX(-12deg);
+        filter: blur(0.1px);
+        opacity: 0.72;
+      }
+
+      .grass-blade.small {
+        width: 12px;
+        height: 34px;
+        opacity: 0.55;
+      }
+
+      .island {
+        display: none;
+        position: absolute;
+        right: 8%;
+        bottom: 7%;
+        z-index: 2;
+        width: min(360px, 28vw);
+        aspect-ratio: 1.25;
+        pointer-events: none;
+      }
+
+      .cube {
+        position: absolute;
+        width: 116px;
+        height: 90px;
+        border-radius: 18px;
+        background: linear-gradient(145deg, #8cb46d, #557b56);
+        box-shadow: 0 28px 42px rgba(0, 0, 0, 0.18);
+        transform: skewY(-10deg) rotate(-7deg);
+      }
+
+      .cube::before {
+        content: "";
+        position: absolute;
+        inset: -22px 10px auto;
+        height: 52px;
+        border-radius: 16px;
+        background: linear-gradient(145deg, #b9d989, #78a669);
+        box-shadow: inset 0 -10px 0 rgba(0, 0, 0, 0.06);
+      }
+
+      .cube.one {
+        left: 0;
+        bottom: 56px;
+      }
+
+      .cube.two {
+        left: 108px;
+        bottom: 28px;
+        background: linear-gradient(145deg, #c28c5b, #83583d);
+      }
+
+      .cube.two::before {
+        background: linear-gradient(145deg, #f1c77a, #be8655);
+      }
+
+      .cube.three {
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(145deg, #9dc97a, #67895a);
+      }
+
+      .cube-label {
+        position: absolute;
+        left: 38px;
+        top: -5px;
+        color: rgba(0, 0, 0, 0.55);
+        font-size: 44px;
+        font-weight: 900;
+        transform: rotate(7deg);
+      }
+
+      .dock-icon.sheet {
+        background: #168f63;
+      }
+
+      .dock-icon.doc-icon {
+        background: #2f6df6;
+      }
+
+      .dock-icon.n8n-icon {
+        background: #ff4f3e;
+      }
+
+      .mac-cursor {
+        position: absolute;
+        z-index: 9;
+        width: 18px;
+        height: 24px;
+        clip-path: polygon(0 0, 0 100%, 7px 78%, 12px 100%, 17px 97%, 12px 76%, 25px 76%);
+        background: #111;
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.24));
+        animation: cursor-work 5.6s ease-in-out infinite;
+      }
+
+      @keyframes cursor-work {
+        0%,
+        12% {
+          left: 24%;
+          top: 36%;
+        }
+
+        38%,
+        50% {
+          left: 58%;
+          top: 48%;
+        }
+
+        76%,
+        100% {
+          left: 50%;
+          top: 72%;
+        }
+      }
+
+      .real-desktop {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        color: #1f2428;
+        background:
+          radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.72), transparent 18%),
+          radial-gradient(circle at 78% 24%, rgba(255, 213, 118, 0.24), transparent 20%),
+          linear-gradient(135deg, #d9e4ef 0%, #f5efe3 42%, #d7e9c1 100%);
+      }
+
+      .mac-menu-bar {
+        position: absolute;
+        inset: 0 0 auto;
+        z-index: 50;
+        height: 30px;
+        padding: 0 12px;
+        background: rgba(248, 248, 246, 0.82);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(20px);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .menu-left,
+      .menu-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .menu-app {
+        font-weight: 850;
+      }
+
+      .menu-item {
+        color: #333;
+      }
+
+      .menu-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        color: #203020;
+        background: rgba(255, 255, 255, 0.56);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        font-size: 12px;
+      }
+
+      .menu-scout {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 4px 9px 4px 3px;
+        border-radius: 999px;
+        color: #1f2428;
+        background: #fff8ea;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 750;
+      }
+
+      .menu-scout.attention {
+        border-color: var(--clay);
+        background: #fff1bd;
+        animation: scout-attention 1.2s ease-in-out infinite;
+      }
+
+      @keyframes scout-attention {
+        0%,
+        100% {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+          transform: translateY(0);
+        }
+
+        50% {
+          box-shadow: 0 0 0 4px rgba(201, 118, 67, 0.18), 0 8px 18px rgba(0, 0, 0, 0.14);
+          transform: translateY(-1px);
+        }
+      }
+
+      .menu-scout .scout-face {
+        width: 22px;
+        height: 16px;
+        border-width: 2px;
+        border-radius: 6px 6px 8px 8px;
+        transform: none;
+        margin-top: 0;
+        box-shadow: -2px 2px 0 var(--pink-strong);
+      }
+
+      .menu-scout .scout-face::before,
+      .menu-scout .scout-face::after {
+        display: none;
+      }
+
+      .menu-scout .scout-eye {
+        width: 4px;
+        height: 8px;
+      }
+
+      .desktop-file-icons {
+        position: absolute;
+        z-index: 4;
+        top: 54px;
+        left: 18px;
+        width: 86px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .desktop-file-icons.right {
+        right: 18px;
+        left: auto;
+      }
+
+      .real-desktop.after-send .desktop-file-icons.right {
+        top: auto;
+        bottom: 100px;
+      }
+
+      .file-icon {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        color: #fff;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.12;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.65);
+      }
+
+      .file-icon-shape {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(145deg, #5da7d9, #2f6df6);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        box-shadow: 0 9px 18px rgba(0, 0, 0, 0.24);
+        font-size: 20px;
+        font-weight: 850;
+      }
+
+      .file-icon-shape.green {
+        background: linear-gradient(145deg, #56b176, #168f63);
+      }
+
+      .file-icon-shape.orange {
+        background: linear-gradient(145deg, #e49a4e, #c97643);
+      }
+
+      .file-icon-shape.gray {
+        background: linear-gradient(145deg, #9aa4a8, #687277);
+      }
+
+      .real-window {
+        position: absolute;
+        z-index: 10;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.2);
+      }
+
+      .real-window.focused {
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.26);
+      }
+
+      .real-titlebar {
+        height: 34px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: rgba(246, 246, 244, 0.94);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .traffic {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+      }
+
+      .traffic span {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+
+      .traffic span:nth-child(1) {
+        background: #ff5f57;
+      }
+
+      .traffic span:nth-child(2) {
+        background: #febc2e;
+      }
+
+      .traffic span:nth-child(3) {
+        background: #28c840;
+      }
+
+      .real-title {
+        flex: 1;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 750;
+        color: #3d3d3d;
+      }
+
+      .real-window-body {
+        height: calc(100% - 34px);
+        padding: 14px;
+        overflow: auto;
+      }
+
+      .numbers-window {
+        left: 112px;
+        top: 76px;
+        width: min(58vw, 900px);
+        height: 520px;
+      }
+
+      .slack-window {
+        right: 108px;
+        top: 84px;
+        width: min(36vw, 520px);
+        height: 300px;
+      }
+
+      .notes-app-window {
+        right: 152px;
+        top: 416px;
+        width: min(34vw, 500px);
+        height: 360px;
+      }
+
+      .mini-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        color: #6d6d6d;
+        font-size: 12px;
+      }
+
+      .mini-chip {
+        padding: 5px 8px;
+        border-radius: 999px;
+        background: #f1f1ee;
+        border: 1px solid #dfdfdc;
+      }
+
+      .real-sheet {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        border: 1px solid #d5d8dc;
+        font-size: 12px;
+      }
+
+      .real-sheet th,
+      .real-sheet td {
+        height: 32px;
+        border-right: 1px solid #d5d8dc;
+        border-bottom: 1px solid #d5d8dc;
+        padding: 7px 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background: #fff;
+      }
+
+      .real-sheet th {
+        background: #eef2f6;
+        color: #53606b;
+        text-align: left;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .real-sheet .row-head {
+        width: 34px;
+        color: #8a8a8a;
+        text-align: center;
+        background: #f7f7f7;
+      }
+
+      .real-sheet .risk {
+        color: #8a4212;
+        background: #fff2c7;
+      }
+
+      .real-sheet .selected-cell {
+        background: #e5f1ff;
+        box-shadow: inset 0 0 0 2px #2f80ed;
+      }
+
+      .slack-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .slack-header strong {
+        font-size: 15px;
+      }
+
+      .slack-msg {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 10px;
+        padding: 10px 0;
+        border-top: 1px solid #ececec;
+        font-size: 13px;
+        line-height: 1.34;
+      }
+
+      .slack-msg:first-of-type {
+        border-top: 0;
+      }
+
+      .slack-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: #5da7d9;
+        font-weight: 850;
+      }
+
+      .slack-meta {
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+        margin-bottom: 3px;
+      }
+
+      .slack-meta strong {
+        font-size: 13px;
+      }
+
+      .slack-meta span {
+        color: #888;
+        font-size: 12px;
+      }
+
+      .notes-paper {
+        min-height: 100%;
+        padding: 18px;
+        border-radius: 8px;
+        background: #fff8d8;
+        box-shadow: inset 0 0 0 1px #eadf9f;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .notes-paper h3 {
+        margin: 0 0 12px;
+        font-size: 20px;
+      }
+
+      .notes-paper p,
+      .notes-paper ul {
+        margin: 0 0 12px;
+      }
+
+      .notes-paper ul {
+        padding-left: 20px;
+      }
+
+      .notes-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #eadf9f;
+      }
+
+      .real-dock {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+        z-index: 20;
+        transform: translateX(-50%);
+        height: 64px;
+        padding: 10px 14px;
+        border-radius: 21px;
+        background: rgba(255, 255, 255, 0.64);
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(20px);
+        display: flex;
+        gap: 10px;
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+      }
+
+      .real-dock .dock-icon {
+        width: 44px;
+        height: 44px;
+      }
+
+      .desktop-action {
+        position: absolute;
+        z-index: 40;
+        left: 50%;
+        bottom: 94px;
+        transform: translateX(-50%);
+        max-width: min(680px, calc(100% - 48px));
+        padding: 12px 14px;
+        border-radius: 16px;
+        background: rgba(255, 248, 234, 0.92);
+        border: 1px solid rgba(0, 0, 0, 0.16);
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 750;
+      }
+
+      .final-success-card {
+        position: absolute;
+        left: 50%;
+        top: 46%;
+        z-index: 32;
+        width: min(720px, calc(100% - 96px));
+        transform: translate(-50%, -50%);
+        padding: 30px;
+        border-radius: 20px;
+        color: #1f2428;
+        background: rgba(255, 248, 234, 0.96);
+        border: 1px solid rgba(0, 0, 0, 0.16);
+        box-shadow: 0 28px 76px rgba(0, 0, 0, 0.22);
+        display: grid;
+        gap: 20px;
+      }
+
+      .final-success-close {
+        position: absolute;
+        right: 16px;
+        top: 16px;
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+        border-radius: 50%;
+        color: #3a332d;
+        background: rgba(255, 255, 255, 0.74);
+        cursor: pointer;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .final-success-close:hover {
+        background: #fff;
+      }
+
+      .final-success-top {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .final-success-top .scout-face {
+        flex: 0 0 auto;
+      }
+
+      .final-success-card small {
+        color: #8f6531;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .final-success-card h4 {
+        margin: 4px 0 0;
+        font-size: clamp(30px, 4vw, 54px);
+        line-height: 0.98;
+      }
+
+      .final-success-card p {
+        margin: 0;
+        color: #4b4036;
+        font-size: clamp(17px, 1.55vw, 23px);
+        line-height: 1.3;
+      }
+
+      .final-success-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .final-success-stat {
+        min-height: 92px;
+        padding: 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        display: grid;
+        align-content: center;
+        gap: 4px;
+      }
+
+      .final-success-stat strong {
+        font-size: clamp(24px, 2.5vw, 38px);
+        line-height: 1;
+      }
+
+      .final-success-stat span {
+        color: #665b52;
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .scout-success-message {
+        padding: 15px 16px;
+        border-radius: 15px;
+        color: #24201d;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        font-size: 16px;
+        line-height: 1.35;
+      }
+
+      .questions-copy {
+        align-content: center;
+      }
+
+      .sent-toast {
+        position: absolute;
+        right: 24px;
+        bottom: 92px;
+        z-index: 45;
+        padding: 12px 16px;
+        border-radius: 999px;
+        color: #17472f;
+        background: #e6f4cf;
+        border: 1px solid rgba(22, 143, 99, 0.28);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+        font-size: 14px;
+        font-weight: 850;
+        pointer-events: none;
+        animation: toast-disappear 2.8s ease forwards;
+      }
+
+      @keyframes toast-disappear {
+        0%,
+        64% {
+          opacity: 1;
+          transform: translateY(0);
+          visibility: visible;
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateY(8px);
+          visibility: hidden;
+        }
+      }
+
+      @media (max-width: 980px) {
+        .deck {
+          grid-template-columns: 1fr;
+        }
+
+        .slide {
+          padding: 28px;
+        }
+
+        .columns,
+        .checks,
+        .test-plan,
+        .demo-card,
+        .demo-grid,
+        .story-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .prototype {
+          grid-template-columns: 1fr;
+        }
+
+        .prototype-rail {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .demo-steps {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .window-apps,
+        .draft-review,
+        .n8n-demo,
+        .payoff-demo {
+          grid-template-columns: 1fr;
+        }
+
+        .n8n-canvas {
+          min-height: 420px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .storyline-head {
+          display: grid;
+        }
+
+        .diagram {
+          grid-template-columns: 1fr;
+        }
+
+        .arrow {
+          height: 34px;
+          width: 2px;
+          justify-self: center;
+        }
+
+        .arrow::after {
+          right: auto;
+          left: 50%;
+          top: auto;
+          bottom: 0;
+          transform: translateX(-50%) rotate(135deg);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .topbar {
+          align-items: stretch;
+          flex-direction: column;
+          padding: 14px;
+        }
+
+        .switcher {
+          width: 100%;
+        }
+
+        .prototype-header {
+          display: none;
+        }
+
+        .switcher button {
+          min-width: 0;
+        }
+
+        .slide-stage,
+        .demo-shell {
+          padding: 14px;
+        }
+
+        .slide {
+          aspect-ratio: auto;
+          min-height: 680px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="scout-face brand-scout-logo" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+          <div>
+            <h1>Scout</h1>
+            <p>Your intelligent local companion</p>
+          </div>
+        </div>
+        <nav class="switcher" aria-label="Switch view">
+          <button class="active" type="button" data-view-button="deck">Deck</button>
+          <button type="button" data-view-button="demo">Demo</button>
+        </nav>
+      </header>
+
+      <main>
+        <section class="view deck active" data-view="deck" aria-label="Presentation deck">
+          <div class="slide-stage">
+            <article class="slide" aria-live="polite">
+              <div class="eyebrow">
+                <span data-slide-kicker>Story</span>
+                <span><span data-slide-number>1</span>/<span data-slide-total>6</span></span>
+              </div>
+              <div data-slide-body></div>
+              <div class="slide-foot">
+                <div class="controls" aria-label="Slide controls">
+                  <button class="icon-button" type="button" data-prev aria-label="Previous slide">‹</button>
+                  <button class="icon-button" type="button" data-next aria-label="Next slide">›</button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view demo" data-view="storyline" aria-label="Demo storyline">
+          <div class="demo-shell">
+            <div class="storyline">
+              <div class="storyline-head">
+                <h2>Scout demo storyline</h2>
+                <p>Michelle does normal work. Scout lives in the toolbar, spots automation opportunities, and pitches drafts she can review, ignore, or save for later.</p>
+              </div>
+
+              <div class="story-grid">
+                <article class="scene">
+                  <div class="scene-title">
+                    <small>1. Normal work</small>
+                    <strong>Michelle assembles the update by hand.</strong>
+                  </div>
+                  <div class="scene-visual">
+                    <div class="desktop-chrome">
+                      <span class="chrome-dot"></span>
+                      <span class="chrome-dot"></span>
+                      <span class="chrome-dot"></span>
+                    </div>
+                    <div class="work-canvas">
+                      <div class="sheet" aria-hidden="true">
+                        <div class="row"><span class="cell hot"></span><span class="cell"></span><span class="cell"></span></div>
+                        <div class="row"><span class="cell"></span><span class="cell hot"></span><span class="cell"></span></div>
+                        <div class="row"><span class="cell"></span><span class="cell"></span><span class="cell hot"></span></div>
+                        <div class="row"><span class="cell hot"></span><span class="cell"></span><span class="cell"></span></div>
+                      </div>
+                      <div class="doc" aria-hidden="true">
+                        <span class="line"></span>
+                        <span class="line"></span>
+                        <span class="line short"></span>
+                      </div>
+                    </div>
+                    <div class="toolbar">
+                      <span class="scout-face" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+                      Scout on
+                    </div>
+                  </div>
+                  <p class="scene-caption">She copies facts from a spreadsheet, checks notes, and writes the same customer-update shape again.</p>
+                </article>
+
+                <article class="scene">
+                  <div class="scene-title">
+                    <small>2. Local signal</small>
+                    <strong>Scout notices the routine.</strong>
+                  </div>
+                  <div class="scene-visual">
+                    <div class="desktop-chrome">
+                      <span class="chrome-dot"></span>
+                      <span class="chrome-dot"></span>
+                      <span class="chrome-dot"></span>
+                    </div>
+                    <div class="prompt">
+                      <strong>I found a possible automation.</strong>
+                      <p>Repeated customer update, spreadsheet checks, and summary formatting.</p>
+                      <div class="prompt-actions">
+                        <span class="prompt-action primary-action">Review draft</span>
+                        <span class="prompt-action">Remind me later</span>
+                        <span class="prompt-action">Not useful</span>
+                        <span class="prompt-action with-face">
+                          <span class="scout-face off" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+                          Turn off
+                        </span>
+                      </div>
+                      <div class="pill-row">
+                        <span class="pill">Local</span>
+                        <span class="pill">Permissioned</span>
+                        <span class="pill">Can turn off</span>
+                      </div>
+                    </div>
+                    <div class="toolbar">
+                      <span class="scout-face" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+                      Scout has an idea
+                    </div>
+                  </div>
+                  <p class="scene-caption">Scout pitches the idea, but Michelle can ignore it, ask for a reminder, dismiss the bad idea, or close Scout’s eyes entirely.</p>
+                </article>
+
+                <article class="scene">
+                  <div class="scene-title">
+                    <small>3. Draft offer</small>
+                    <strong>Scout brings a starting point.</strong>
+                  </div>
+                  <div class="scene-visual">
+                    <div class="review-panel">
+                      <div class="prompt" style="margin:0">
+                        <strong>I prepared a draft.</strong>
+                        <p>Found reusable workflow and agent pieces from Sales Ops. I kept the notes so you can reference them later.</p>
+                      </div>
+                      <div class="preview-box" aria-hidden="true">
+                        <span class="line"></span>
+                        <span class="line"></span>
+                        <span class="line short"></span>
+                      </div>
+                      <div class="source-list">
+                        <span class="source">Previous update format</span>
+                        <span class="source">Customer spreadsheet</span>
+                        <span class="source">Reusable workflow and agent parts</span>
+                        <span class="source">Saved Scout context</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="scene-caption">Scout keeps track of the useful context and discarded ideas, so the next suggestion can avoid repeating the same mistake.</p>
+                </article>
+
+                <article class="scene">
+                  <div class="scene-title">
+                    <small>4. Correction</small>
+                    <strong>Michelle fixes the business rule.</strong>
+                  </div>
+                  <div class="scene-visual">
+                    <div class="correction">
+                      <div class="choice on"><span>Include renewal owner</span><strong>On</strong></div>
+                      <div class="choice"><span>Include internal notes</span><strong>Off</strong></div>
+                      <div class="choice on"><span>Enterprise accounts only</span><strong>On</strong></div>
+                      <div class="prompt" style="margin:0">
+                        <strong>Got it.</strong>
+                        <p>Scout will carry this correction into the n8n draft and remember it for similar suggestions.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="scene-caption">The correction is the value moment: easier than starting over, and useful context for the next suggestion.</p>
+                </article>
+
+                <article class="scene">
+                  <div class="scene-title">
+                    <small>5. Review in n8n</small>
+                    <strong>Michelle shapes the workflow with AI.</strong>
+                  </div>
+                  <div class="scene-visual">
+                    <div class="assistant-panel">
+                      <div class="n8n-bar"><span>n8n draft workflow</span><span>Pull Scout context</span></div>
+                      <div class="workflow" aria-hidden="true" style="min-height:155px;margin:4px 0">
+                        <div class="workflow-node">Spreadsheet source</div>
+                        <div class="workflow-node">Summarize changes</div>
+                        <div class="workflow-node">Team agent step</div>
+                        <div class="workflow-node">Draft update</div>
+                      </div>
+                      <div class="user-message">Use Scout’s notes and match our executive-summary format.</div>
+                      <div class="assistant-message">Pulled with your permission. I updated the structure and kept the renewal-owner rule.</div>
+                    </div>
+                  </div>
+                  <p class="scene-caption">n8n can pull Scout’s context on demand. The context stays private until Michelle asks to use it.</p>
+                </article>
+
+                <article class="scene">
+                  <div class="scene-title">
+                    <small>6. Next Thursday</small>
+                    <strong>The published workflow does the setup.</strong>
+                  </div>
+                  <div class="scene-visual">
+                    <div class="publish-card">
+                      <div class="status-row"><span>Workflow published</span><span>On</span></div>
+                      <div class="saved-time">Less assembly<span>Michelle reviews the draft instead of rebuilding it.</span></div>
+                      <div class="source-list">
+                        <span class="source">Draft generated</span>
+                        <span class="source">Michelle reviews</span>
+                        <span class="source">Dismissed ideas stay dismissed</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="scene-caption">The payoff is practical: next Thursday, Michelle spends less time gathering and formatting, and more time reviewing.</p>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view demo" data-view="demo" aria-label="Clickable demo">
+          <div class="prototype-shell">
+            <div class="prototype">
+              <aside class="prototype-rail">
+                <div>
+                  <h2>Scout demo</h2>
+                  <p>A guided prototype of Michelle moving from normal work to a published workflow.</p>
+                </div>
+                <div class="demo-steps" data-demo-steps></div>
+                <div class="signal">
+                  <span class="scout-face" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+                  <div>
+                    <strong>Local by default</strong>
+                    <span>Scout context enters n8n only when Michelle asks.</span>
+                  </div>
+                </div>
+              </aside>
+              <section class="prototype-main">
+                <header class="prototype-header">
+                  <div>
+                    <small data-demo-kicker></small>
+                    <h3 data-demo-title></h3>
+                  </div>
+                  <div class="privacy-badge" data-demo-badge></div>
+                </header>
+                <div class="prototype-body" data-demo-body></div>
+                <footer class="prototype-footer">
+                  <p data-demo-caption></p>
+                  <div class="demo-button-row">
+                    <button class="demo-button" type="button" data-demo-prev>Back</button>
+                    <button class="demo-button primary" type="button" data-demo-next>Next</button>
+                  </div>
+                </footer>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const slides = [
+        {
+          kicker: "Product bet",
+          body: `
+            <div class="big-copy">
+              <h2 class="title-with-scout">Meet Scout. <span class="scout-face title-face" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span></h2>
+              <p class="lede">An intelligent local companion directly in your toolbar. Scout learns from selected work, spots what n8n could automate, and pitches a workflow or agent for you to review, ignore, or save for later.</p>
+            </div>
+          `,
+        },
+        {
+          kicker: "The story",
+          body: `
+            <div class="big-copy">
+              <h2>Michelle needs to send a customer update every Friday.</h2>
+              <p class="lede">She gathers sources, checks a spreadsheet, and writes the summary. With permission, Scout learns the routine and offers a draft for next time.</p>
+            </div>
+          `,
+        },
+        {
+          kicker: "How it works",
+          body: `
+            <div class="diagram">
+              <div class="node"><small>Local context</small><strong>Scout notices work worth automating</strong></div>
+              <div class="arrow" aria-hidden="true"></div>
+              <div class="node"><small>Team knowledge</small><strong>It will check for reusable workflows, agents, or make new ones</strong></div>
+              <div class="arrow" aria-hidden="true"></div>
+              <div class="node"><small>Draft</small><strong>When ready, it shares a proposal for you to review</strong></div>
+            </div>
+          `,
+        },
+        {
+          kicker: "Why it matters for n8n",
+          body: `
+            <div class="columns labs-columns">
+              <div class="point"><strong>Activation from real work</strong><span>Scout turns daily routines into concrete proposals, so people open n8n with a reason to start.</span></div>
+              <div class="point"><strong>Retention through new ideas</strong><span>Proactive suggestions pull users back to review, refine, and publish more workflows and agents.</span></div>
+              <div class="point"><strong>Possibility becomes visible</strong><span>Scout keeps showing what n8n could automate next, making the possibilities feel endless.</span></div>
+              <div class="point lab-question"><small>Labs question</small><strong>What’s the bet?</strong><span>A local companion can activate users before they know what to build.</span></div>
+              <div class="point lab-question"><small>Labs question</small><strong>What has to be true?</strong><span>People are willing to install a local companion, give it selected context, and act on its proposals.</span></div>
+              <div class="point lab-question"><small>Labs question</small><strong>How could we test it?</strong><span>Give people drafts based on real work and watch whether they correct, reject, or continue into n8n.</span></div>
+            </div>
+          `,
+        },
+        {
+          kicker: "First test",
+          body: `
+            <div class="test-plan">
+              <div class="quote">
+                <p>Would a draft based on your real work make you want to try n8n?</p>
+                <span>The first test is desire to continue, not automation accuracy.</span>
+              </div>
+              <div class="steps">
+                <div class="step"><span class="num">1</span><span>Ask three medium-technical people for a recent recurring task.</span></div>
+                <div class="step"><span class="num">2</span><span>Prepare drafts manually and disclose that.</span></div>
+                <div class="step"><span class="num">3</span><span>Show sample output, then ask what they would do next.</span></div>
+                <div class="step"><span class="num">4</span><span>Watch what they correct, reject, or continue into n8n.</span></div>
+              </div>
+            </div>
+          `,
+        },
+        {
+          kicker: "Try demo",
+          body: `
+            <div class="big-copy">
+              <h2>Now let’s follow Michelle through the flow.</h2>
+              <p class="lede">Normal work, Scout’s suggestion, an editable n8n draft, publish, and the automatic update waiting next Thursday.</p>
+              <button class="view-demo-cta" type="button" data-go-demo>View demo</button>
+            </div>
+          `,
+        },
+        {
+          kicker: "Questions",
+          body: `
+            <div class="big-copy questions-copy">
+              <h2>Questions?</h2>
+              <p class="lede">The bet: real work can become reviewable starting points that bring people into n8n to refine, publish, and return.</p>
+            </div>
+          `,
+        }
+      ];
+
+      const desktopDecor = `
+        <div class="desktop-icons">
+          <div class="desktop-icon"><span class="desktop-glyph">⌂</span><span>Home</span></div>
+          <div class="desktop-icon"><span class="desktop-glyph">S</span><span>Sheet</span></div>
+          <div class="desktop-icon"><span class="desktop-glyph">N</span><span>Notes</span></div>
+          <div class="desktop-icon"><span class="desktop-glyph">⚙</span><span>Workflows</span></div>
+        </div>
+        <div class="desktop-icons right">
+          <div class="desktop-icon"><span class="desktop-glyph">?</span><span>Help</span></div>
+          <div class="desktop-icon"><span class="desktop-glyph">↗</span><span>n8n</span></div>
+          <div class="desktop-icon"><span class="desktop-glyph">⌫</span><span>Dismissed</span></div>
+        </div>
+        <span class="grass-blade" style="left:14%;top:18%;--r:-24deg"></span>
+        <span class="grass-blade small" style="left:32%;top:12%;--r:18deg"></span>
+        <span class="grass-blade" style="left:78%;top:18%;--r:22deg"></span>
+        <span class="grass-blade small" style="left:64%;top:65%;--r:-12deg"></span>
+        <span class="grass-blade" style="left:22%;top:76%;--r:28deg"></span>
+        <div class="island">
+          <div class="cube one"><span class="cube-label">n</span></div>
+          <div class="cube two"><span class="cube-label">8</span></div>
+          <div class="cube three"><span class="cube-label">n</span></div>
+        </div>
+      `;
+
+      const customerSheet = `
+        <table class="sheet-table" aria-label="Customer update spreadsheet">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Segment</th>
+              <th>Renewal</th>
+              <th>Health</th>
+              <th>Owner</th>
+              <th>ARR</th>
+              <th>Next action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="hot">Acme</td>
+              <td>Enterprise</td>
+              <td>Nov 14</td>
+              <td class="hot">Risk up</td>
+              <td class="selected">Priya</td>
+              <td>$84k</td>
+              <td>Exec check-in</td>
+            </tr>
+            <tr>
+              <td>Northwind</td>
+              <td>Enterprise</td>
+              <td>Dec 02</td>
+              <td class="hot">Blocked</td>
+              <td>Sam</td>
+              <td>$62k</td>
+              <td>Procurement follow-up</td>
+            </tr>
+            <tr>
+              <td>Globex</td>
+              <td>Mid-market</td>
+              <td>Jan 19</td>
+              <td>Stable</td>
+              <td>Renée</td>
+              <td>$31k</td>
+              <td class="hot">Expansion note</td>
+            </tr>
+            <tr>
+              <td class="hot">Umbrella</td>
+              <td>Enterprise</td>
+              <td>Oct 31</td>
+              <td>Churn risk</td>
+              <td>Jules</td>
+              <td>$57k</td>
+              <td>Escalate support</td>
+            </tr>
+            <tr>
+              <td class="muted-cell">Initech</td>
+              <td>SMB</td>
+              <td>Feb 08</td>
+              <td>Healthy</td>
+              <td>Marta</td>
+              <td>$11k</td>
+              <td class="muted-cell">No update</td>
+            </tr>
+            <tr>
+              <td>Stark</td>
+              <td>Enterprise</td>
+              <td>Mar 03</td>
+              <td>Healthy</td>
+              <td>Priya</td>
+              <td>$96k</td>
+              <td>Confirm rollout date</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+
+      const manualDraft = `
+        <div class="doc-content">
+          <div class="doc-meta"><span>Customer update - Thursday draft</span><span>Edited 11:18</span></div>
+          <h5>Customer update - draft</h5>
+          <p><strong>Summary:</strong> enterprise accounts need attention before next week’s renewal review.</p>
+          <ul>
+            <li><span class="copying-note">Acme</span> risk moved up. Add renewal owner and next step.</li>
+            <li><span class="copying-note">Northwind</span> still blocked in procurement. Keep internal notes out.</li>
+            <li>Umbrella needs support escalation before Friday.<span class="typing-cursor"></span></li>
+          </ul>
+        </div>
+      `;
+
+      const recentNotes = `
+        <div class="note-thread">
+          <div class="note-msg"><span class="avatar">P</span><span><strong>Priya · CRM</strong>Acme onboarding is still waiting on SSO. I own renewal follow-up.</span></div>
+          <div class="note-msg"><span class="avatar" style="background:#c97643">S</span><span><strong>Sam · Slack</strong>Northwind procurement is blocked. Please don’t include the internal pricing note.</span></div>
+          <div class="note-msg"><span class="avatar" style="background:#168f63">J</span><span><strong>Jules · Support</strong>Umbrella escalation is open. Customer asked for an update before Friday.</span></div>
+        </div>
+      `;
+
+      const realDesktopIcons = `
+        <div class="desktop-file-icons">
+          <div class="file-icon"><span class="file-icon-shape green">#</span><span>Customer updates</span></div>
+          <div class="file-icon"><span class="file-icon-shape">N</span><span>Meeting notes</span></div>
+          <div class="file-icon"><span class="file-icon-shape orange">🐶</span><span>Dog</span></div>
+        </div>
+        <div class="desktop-file-icons right">
+          <div class="file-icon"><span class="file-icon-shape gray">🗑</span><span>Bin</span></div>
+        </div>
+      `;
+
+      const realDock = `
+        <div class="real-dock" aria-hidden="true">
+          <span class="dock-icon sheet">N</span>
+          <span class="dock-icon" style="background:#611f69">S</span>
+          <span class="dock-icon doc-icon">D</span>
+          <span class="dock-icon" style="background:#f5bd25;color:#111">Notes</span>
+          <span class="dock-icon n8n-icon">n8n</span>
+        </div>
+      `;
+
+      function realMenu(activeApp, scoutText, clickable = false, attention = false, quiet = false) {
+        return `
+          <div class="mac-menu-bar">
+            <div class="menu-left">
+              <span class="menu-app">${activeApp}</span>
+              <span class="menu-item">Thursday customer update</span>
+            </div>
+            <div class="menu-right">
+              <button class="menu-scout ${attention ? "attention" : ""}" type="button" ${clickable ? "data-demo-next" : ""}><span class="scout-face ${quiet ? "off" : ""}" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>${scoutText}</button>
+              <span class="menu-item">Thu 11:44</span>
+            </div>
+          </div>
+        `;
+      }
+
+      const realisticSheet = `
+        <div class="mini-toolbar">
+          <span class="mini-chip">Q4 accounts</span>
+          <span class="mini-chip">Filter: Enterprise</span>
+          <span class="mini-chip">Sorted by renewal date</span>
+        </div>
+        <table class="real-sheet" aria-label="Customer update spreadsheet">
+          <thead>
+            <tr>
+              <th class="row-head"></th>
+              <th>Account</th>
+              <th>Plan</th>
+              <th>Renewal</th>
+              <th>Health</th>
+              <th>Owner</th>
+              <th>ARR</th>
+              <th>Next action</th>
+              <th>Include</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="row-head">12</td><td>Acme</td><td>Enterprise</td><td>Nov 14</td><td class="risk">Risk up</td><td class="selected-cell">Priya</td><td>$84k</td><td>Exec check-in</td><td>Yes</td></tr>
+            <tr><td class="row-head">13</td><td>Northwind</td><td>Enterprise</td><td>Dec 02</td><td class="risk">Blocked</td><td>Sam</td><td>$62k</td><td>Procurement follow-up</td><td>Yes</td></tr>
+            <tr><td class="row-head">14</td><td>Globex</td><td>Mid-market</td><td>Jan 19</td><td>Stable</td><td>Renée</td><td>$31k</td><td>Expansion note</td><td>No</td></tr>
+            <tr><td class="row-head">15</td><td>Umbrella</td><td>Enterprise</td><td>Oct 31</td><td class="risk">Churn risk</td><td>Jules</td><td>$57k</td><td>Escalate support</td><td>Yes</td></tr>
+            <tr><td class="row-head">16</td><td>Stark</td><td>Enterprise</td><td>Mar 03</td><td>Healthy</td><td>Priya</td><td>$96k</td><td>Confirm rollout date</td><td>No</td></tr>
+            <tr><td class="row-head">17</td><td>Wayne</td><td>Enterprise</td><td>Mar 22</td><td>Healthy</td><td>Sam</td><td>$73k</td><td>Send QBR deck</td><td>No</td></tr>
+            <tr><td class="row-head">18</td><td>Initech</td><td>SMB</td><td>Feb 08</td><td>Healthy</td><td>Marta</td><td>$11k</td><td>No update</td><td>No</td></tr>
+          </tbody>
+        </table>
+      `;
+
+      const realisticSlack = `
+        <div class="slack-header"><strong>#customer-updates</strong><span class="mini-chip">Slack</span></div>
+        <div class="slack-msg"><span class="slack-avatar">P</span><span><span class="slack-meta"><strong>Priya</strong><span>10:12</span></span>Acme’s onboarding delay is still about SSO. I own renewal follow-up. Please include me on the next action.</span></div>
+        <div class="slack-msg"><span class="slack-avatar" style="background:#c97643">S</span><span><span class="slack-meta"><strong>Sam</strong><span>10:34</span></span>Northwind is blocked in procurement. Don’t include the internal pricing note in the customer update.</span></div>
+        <div class="slack-msg"><span class="slack-avatar" style="background:#168f63">J</span><span><span class="slack-meta"><strong>Jules</strong><span>11:02</span></span>Umbrella asked for a support escalation update before Friday. I’ll add the ticket link in CRM.</span></div>
+      `;
+
+      const realisticNotes = `
+        <div class="notes-paper">
+          <h3>Customer update - Thursday</h3>
+          <p><strong>Goal:</strong> send a crisp enterprise-account update to CS leads before Friday morning.</p>
+          <ul>
+            <li>Use the same sections as last week: summary, risks, next actions.</li>
+            <li>Include renewal owner for Acme and Umbrella.</li>
+            <li>Exclude internal pricing notes from Northwind.</li>
+          </ul>
+          <p><strong>Draft line:</strong> Acme risk increased after unresolved SSO onboarding delay. Priya owns renewal follow-up.<span class="typing-cursor"></span></p>
+          <div class="notes-actions">
+            <button class="prompt-action" type="button">Save draft</button>
+            <button class="prompt-action primary-action" type="button" data-demo-next>Send update</button>
+          </div>
+        </div>
+      `;
+
+      function workflowNode(node) {
+        return `
+          <div class="node-wrap">
+            <div class="workflow-node-dark ${node.type}">
+              <span class="node-port left"></span>
+              <span class="node-icon ${node.type}">${node.icon}</span>
+              <span class="node-status ${node.warn ? "warn" : ""}">${node.warn ? "!" : "✓"}</span>
+              <span class="node-port right"></span>
+            </div>
+            <strong>${node.title}</strong>
+            <small>${node.sub}</small>
+          </div>
+        `;
+      }
+
+      function workflowMap(mode) {
+        const base = [
+          { type: "trigger", icon: "8am", title: "Every Thursday morning", sub: "schedule trigger" },
+          { type: "sheet", icon: "Sheet", title: "Read customer accounts", sub: "Numbers / Sheets", warn: mode === "proposal" },
+          { type: "filter", icon: "Rules", title: "Keep included accounts", sub: "enterprise only" },
+          { type: "agent", icon: "AI", title: "Draft customer update", sub: "assistant step" },
+          { type: "gmail", icon: "Mail", title: mode === "proposal" || mode === "refine" ? "Create draft for review" : "Draft lands in inbox", sub: "Michelle reviews", warn: mode !== "published" }
+        ];
+
+        const refined = [
+          base[0],
+          base[1],
+          base[2],
+          { type: "slack", icon: "Slack", title: "Search recent Slack notes", sub: "approved context", warn: mode === "refine" },
+          { type: "code", icon: "{}", title: "Prepare update context", sub: "owners + rules" },
+          base[3],
+          base[4]
+        ];
+
+        const nodes = mode === "proposal" ? base : refined;
+        const labels = mode === "proposal"
+          ? ["1 item", "4 rows", "3 kept", "draft"]
+          : ["1 item", "4 rows", "3 kept", "5 notes", "context", "draft"];
+
+        const row = nodes.map((node, index) => `
+          ${workflowNode(node)}
+          ${index < nodes.length - 1 ? `<div class="workflow-wire" data-label="${labels[index]}"></div>` : ""}
+        `).join("");
+
+        const model = mode === "proposal" ? "" : `
+          <div class="model-branch">
+            <div class="model-line"></div>
+            <div class="model-pill">AI</div>
+            <span>Claude model</span>
+          </div>
+        `;
+
+        return `
+          <div class="workflow-map ${mode === "proposal" ? "compact" : "long"}">
+            <div class="workflow-row">${row}</div>
+            ${model}
+          </div>
+        `;
+      }
+
+      function n8nBrowser(mode = "proposal") {
+        const chat = {
+          proposal: `
+            <div class="n8n-chat-bubble">
+              <strong>I turned Scout’s observation into a workflow proposal.</strong>
+              Michelle, this can automate the Thursday customer update: read the account sheet, combine approved Slack/CRM notes, draft the customer summary, and keep internal-only notes out.
+              <div class="proposal-card">
+                <span>Draft workflow</span>
+                Customer update assistant
+              </div>
+            </div>
+            <div class="n8n-chat-bubble">
+              What do you think of this? Any rules you want to change before we try it?
+            </div>
+          `,
+          refine: `
+            <div class="n8n-chat-bubble">
+              <strong>I turned Scout’s observation into a workflow proposal.</strong>
+              It reads the account sheet, adds approved context, and drafts the update.
+            </div>
+            <div class="n8n-chat-bubble user">Include renewal owner, group next actions by owner, and keep Northwind’s pricing note internal.</div>
+            <div class="n8n-chat-bubble">
+              Got it. I updated the draft workflow and added those as workflow rules before the output step.
+            </div>
+          `,
+          run: `
+            <div class="n8n-chat-bubble">
+              <strong>The draft is ready to test.</strong>
+              I’ll run it with today’s account data and show the generated update before anything is sent.
+            </div>
+            <div class="n8n-chat-bubble user">Try it with today’s accounts.</div>
+            <div class="n8n-chat-bubble">
+              Test run complete. The draft includes Acme, Northwind, and Umbrella, with internal-only notes excluded.
+            </div>
+          `,
+          published: `
+            <div class="n8n-chat-bubble">
+              <strong>The workflow is published.</strong>
+              The canvas is now in its even production state. The recurring draft will be prepared automatically and held for review.
+            </div>
+            <div class="n8n-chat-bubble">
+              Nothing sends without review. She still gets the final judgement call.
+            </div>
+          `
+        }[mode];
+
+        const inputText = {
+          proposal: "Ask for changes, or start from this proposal...",
+          refine: "Tell n8n what to adjust next...",
+          run: "Ask about the test result...",
+          published: "Workflow is active..."
+        }[mode];
+
+        const primaryAction = {
+          proposal: "Start from this",
+          refine: "Try workflow",
+          run: "Publish workflow",
+          published: "Published"
+        }[mode];
+
+        const result = mode === "run" || mode === "published" ? `
+          <div class="run-result">
+            <strong>${mode === "published" ? "Published workflow" : "Test output"}</strong>
+            ${mode === "published" ? "Active schedule. The workflow creates the customer update draft and waits for Michelle’s review." : "Draft customer update created with 3 account sections, renewal owners included, and one internal note removed."}
+          </div>
+        ` : "";
+
+        const executeButton = mode === "run" ? `<button class="execute-button" type="button" data-demo-next>Execute workflow</button>` : "";
+        const browserTools = mode === "published"
+          ? `<button class="browser-close-action" type="button" data-demo-next aria-label="Close">×</button>`
+          : "";
+        const publishButton = mode === "published"
+          ? `<button class="publish-button published-state" type="button" aria-disabled="true">${primaryAction}</button>`
+          : `<button class="publish-button" type="button" data-demo-next>${primaryAction}</button>`;
+
+        return `
+          <section class="browser-window ${mode === "published" ? "click-to-close" : ""}" ${mode === "published" ? "data-demo-next" : ""}>
+            <div class="browser-toolbar">
+              <div class="traffic"><span></span><span></span><span></span></div>
+              <div class="browser-address">app.n8n.cloud/workflows/customer-update-draft</div>
+              <div class="browser-tools">${browserTools}</div>
+            </div>
+            <div class="n8n-webapp">
+              <aside class="n8n-left-nav">
+                <div class="n8n-logo-row"><span class="n8n-logo-mark" aria-hidden="true"></span><span>n8n</span></div>
+                <div class="n8n-nav-list">
+                  <div class="n8n-nav-item active">n8n Assistant</div>
+                  <div class="n8n-nav-item">Overview</div>
+                  <div class="n8n-nav-item">Personal</div>
+                  <div class="n8n-nav-item">Shared with you</div>
+                  <div class="n8n-nav-item">Customer update draft</div>
+                </div>
+                <div class="n8n-nav-list">
+                  <div class="n8n-nav-item">Templates</div>
+                  <div class="n8n-nav-item">Help</div>
+                  <div class="n8n-nav-item">Settings</div>
+                </div>
+              </aside>
+              <aside class="n8n-assistant-panel">
+                <div class="assistant-top"><strong>Chat history</strong><span>Preview</span></div>
+                <div class="chat-stack">${chat}</div>
+                <div class="assistant-input">
+                  <div class="assistant-input-row">
+                    <span>${inputText}</span>
+                    <button class="send-square" type="button" data-demo-next aria-label="Send">↑</button>
+                  </div>
+                </div>
+              </aside>
+              <section class="workflow-side">
+                <div class="workflow-top">
+                  <div><small>${mode === "published" ? "Personal / Published workflow" : "Personal / Scout proposal"}</small><strong>Customer update draft</strong></div>
+                  ${publishButton}
+                </div>
+                <div class="canvas-dark ${mode === "published" ? "published" : "draft"}">
+                  ${workflowMap(mode)}
+                  ${result}
+                  ${executeButton}
+                </div>
+                <div class="workflow-logs">Logs</div>
+              </section>
+            </div>
+          </section>
+        `;
+      }
+
+      const nextThursdayInbox = `
+        <div class="real-desktop">
+          ${realMenu("Mail", "Customer update draft ready")}
+          <section class="real-window focused mail-window">
+            <div class="real-titlebar">
+              <div class="traffic"><span></span><span></span><span></span></div>
+              <div class="real-title">Mail - Customer update draft</div>
+              <span></span>
+            </div>
+            <div class="mail-layout">
+              <aside class="mail-list">
+                <h4>Inbox</h4>
+                <div class="mail-item active">
+                  <strong>n8n workflow</strong>
+                  <span>Draft ready: Thursday customer update</span>
+                  <small>Today, 08:03</small>
+                </div>
+                <div class="mail-item">
+                  <strong>Priya</strong>
+                  <span>Acme renewal owner confirmed</span>
+                  <small>Yesterday</small>
+                </div>
+                <div class="mail-item">
+                  <strong>Slack digest</strong>
+                  <span>3 customer-update notes</span>
+                  <small>Yesterday</small>
+                </div>
+              </aside>
+              <section class="mail-draft">
+                <div class="mail-head">
+                  <div>
+                    <h4>Thursday customer update</h4>
+                    <div class="mail-meta">
+                      <span class="mail-pill">Generated by n8n</span>
+                      <span class="mail-pill">Needs Michelle review</span>
+                      <span class="mail-pill">Not sent</span>
+                    </div>
+                  </div>
+                  <div class="prompt-actions">
+                    <button class="prompt-action" type="button">Edit draft</button>
+                    <button class="prompt-action primary-action" type="button" data-demo-next>Send update</button>
+                  </div>
+                </div>
+                <div class="draft-paper">
+                  <h5>Customer update - ready for review</h5>
+                  <p><strong>Summary:</strong> Three enterprise accounts need attention before Friday. The workflow pulled the account sheet, approved Slack context, and Michelle’s saved rules.</p>
+                  <ul>
+                    <li><strong>Acme:</strong> onboarding delay remains open. Priya owns renewal follow-up. Next action: schedule exec check-in.</li>
+                    <li><strong>Northwind:</strong> procurement remains blocked. Internal pricing note was excluded.</li>
+                    <li><strong>Umbrella:</strong> support escalation needs customer-facing update before Friday.</li>
+                  </ul>
+                  <p><strong>Next actions by owner:</strong> Priya owns Acme renewal follow-up. Sam owns Northwind procurement follow-up. Jules owns Umbrella support update.</p>
+                </div>
+              </section>
+            </div>
+          </section>
+          ${realDock}
+        </div>
+      `;
+
+      const timeJumpDesktop = `
+        <div class="real-desktop time-jump-desktop">
+          ${realMenu("Finder", "Scout quiet", false, false, true)}
+          ${realDesktopIcons}
+          <div class="time-card">
+            <small>One week later</small>
+            <strong>The following Thursday</strong>
+            <span>08:03 - the draft is ready for review</span>
+          </div>
+          ${realDock}
+        </div>
+      `;
+
+      const sentUpdateDesktop = `
+        <div class="real-desktop">
+          ${realMenu("Finder", "Scout keeps learning", false, true)}
+          ${realDesktopIcons}
+          <div class="final-success-card">
+            <button class="final-success-close" type="button" data-demo-next aria-label="Close success message">×</button>
+            <div class="final-success-top">
+              <span class="scout-face" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+              <div>
+                <small>Update sent</small>
+                <h4>Michelle saved 20 minutes this week.</h4>
+              </div>
+            </div>
+            <p>Scout suggested the automation. Michelle reviewed the draft, made the final call, and got back to the rest of her day.</p>
+            <div class="final-success-stats">
+              <div class="final-success-stat"><strong>20m</strong><span>saved this Thursday</span></div>
+              <div class="final-success-stat"><strong>Weekly</strong><span>draft arrives for review</span></div>
+              <div class="final-success-stat"><strong>Learning</strong><span>rules improve the next idea</span></div>
+            </div>
+            <div class="scout-success-message"><strong>Scout:</strong> That worked. I’ll keep an eye out for more repeatable work we can turn into n8n automations.</div>
+          </div>
+          ${realDock}
+        </div>
+      `;
+
+      const moreIdeasDesktop = `
+        <div class="real-desktop">
+          ${realMenu("Finder", "Scout found more ideas", true, true)}
+          ${realDesktopIcons}
+          <div class="scout-popover expanded idea-popover">
+            <div class="scout-brand-line"><span class="n8n-badge">n8n</span><span>More possibilities</span></div>
+            <h4>I found a few more routines we could automate.</h4>
+            <p>The customer update worked, so I kept watching selected work. These are just proposals: review one, save it for later, or dismiss it.</p>
+            <div class="prompt-actions">
+              <button class="prompt-action" type="button">Remind me later</button>
+              <button class="prompt-action primary-action" type="button" data-demo-next>Show ideas</button>
+            </div>
+          </div>
+          ${realDock}
+        </div>
+      `;
+
+      const ideaQueueDesktop = `
+        <div class="real-desktop">
+          ${realMenu("Finder", "Scout keeps learning", false, true)}
+          ${realDesktopIcons}
+          <div class="idea-panel">
+            <button class="final-success-close" type="button" data-close-to-questions aria-label="Close demo and show questions">×</button>
+            <div class="idea-panel-head">
+              <span class="scout-face" aria-hidden="true"><span class="scout-eye"></span><span class="scout-eye"></span></span>
+              <div>
+                <small>Suggested next</small>
+                <h4>Three more tasks Michelle could stop doing by hand.</h4>
+              </div>
+            </div>
+            <div class="idea-list">
+              <div class="idea-card">
+                <div class="idea-type workflow">Workflow</div>
+                <div>
+                  <strong>Nudge renewal owners</strong>
+                  <p>When ownership changes, create the follow-up task and draft the customer note.</p>
+                </div>
+                <div class="idea-card-actions">
+                  <button class="prompt-action primary-action" type="button">Review</button>
+                </div>
+              </div>
+              <div class="idea-card">
+                <div class="idea-type agent">Agent</div>
+                <div>
+                  <strong>Prep escalation calls</strong>
+                  <p>Before the call, pull Slack, tickets, and account context into one brief.</p>
+                </div>
+                <div class="idea-card-actions">
+                  <button class="prompt-action" type="button">Save for later</button>
+                </div>
+              </div>
+              <div class="idea-card">
+                <div class="idea-type workflow">Workflow</div>
+                <div>
+                  <strong>Start QBR decks</strong>
+                  <p>Turn account health, risks, and recent notes into a first-pass deck outline.</p>
+                </div>
+                <div class="idea-card-actions">
+                  <button class="prompt-action" type="button">Dismiss</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          ${realDock}
+        </div>
+      `;
+
+      const demoScreens = [
+        {
+          kicker: "Normal work",
+          title: "Michelle is checking accounts and writing the update.",
+          badge: "Scout on",
+          caption: "Michelle is not in n8n yet. She is doing normal work across the tools she already uses.",
+          body: `
+            <div class="real-desktop">
+              ${realMenu("Numbers", "Scout watching selected apps")}
+              ${realDesktopIcons}
+              <section class="real-window focused numbers-window">
+                <div class="real-titlebar"><div class="traffic"><span></span><span></span><span></span></div><div class="real-title">Customer update source - Q4 accounts.numbers</div><span></span></div>
+                <div class="real-window-body">${realisticSheet}</div>
+              </section>
+              <section class="real-window slack-window">
+                <div class="real-titlebar"><div class="traffic"><span></span><span></span><span></span></div><div class="real-title">Slack - #customer-updates</div><span></span></div>
+                <div class="real-window-body">${realisticSlack}</div>
+              </section>
+              <section class="real-window notes-app-window">
+                <div class="real-titlebar"><div class="traffic"><span></span><span></span><span></span></div><div class="real-title">Notes - Customer update</div><span></span></div>
+                <div class="real-window-body">${realisticNotes}</div>
+              </section>
+              <div class="mac-cursor" aria-hidden="true"></div>
+              ${realDock}
+            </div>
+          `
+        },
+        {
+          kicker: "Scout pitches",
+          title: "Scout asks for Michelle’s attention.",
+          badge: "Review first",
+          caption: "The suggestion comes from the toolbar where Scout lives. Michelle can open it, ignore it, or ask later.",
+          body: `
+            <div class="real-desktop after-send">
+              ${realMenu("Finder", "Scout found an n8n idea", true, true)}
+              ${realDesktopIcons}
+              <div class="sent-toast">Update sent</div>
+              <div class="scout-popover compact">
+                <div class="scout-brand-line"><span class="n8n-badge">n8n</span><span>Automation opportunity</span></div>
+                <h4>I noticed work we can automate.</h4>
+                <p>This customer update routine looks repeatable. Want me to show you a proposal?</p>
+                <div class="prompt-actions">
+                  <button class="prompt-action primary-action" type="button" data-demo-next>Show me</button>
+                  <button class="prompt-action" type="button">Remind me later</button>
+                  <button class="prompt-action" type="button">Not useful</button>
+                </div>
+              </div>
+              ${realDock}
+            </div>
+          `
+        },
+        {
+          kicker: "n8n opens",
+          title: "The proposal opens in n8n.",
+          badge: "Draft only",
+          caption: "Scout makes the local observation. n8n turns it into an editable proposal inside the product.",
+          body: `
+            <div class="real-desktop">
+              ${realMenu("Browser", "Scout handed this to n8n")}
+              ${n8nBrowser("proposal")}
+              ${realDock}
+            </div>
+          `
+        },
+        {
+          kicker: "Refine",
+          title: "Michelle finesses the draft with the n8n Assistant.",
+          badge: "User in control",
+          caption: "The assistant asks for judgement calls, then updates the workflow rules before anything runs.",
+          body: `
+            <div class="real-desktop">
+              ${realMenu("Browser", "n8n draft being refined")}
+              ${n8nBrowser("refine")}
+              ${realDock}
+            </div>
+          `
+        },
+        {
+          kicker: "Try it out",
+          title: "Michelle tests the workflow before publishing.",
+          badge: "Preview run",
+          caption: "The workflow can be executed as a test run, so Michelle sees the draft output before anything is sent.",
+          body: `
+            <div class="real-desktop">
+              ${realMenu("Browser", "n8n test run complete")}
+              ${n8nBrowser("run")}
+              ${realDock}
+            </div>
+          `
+        },
+        {
+          kicker: "Payoff",
+          title: "The workflow is published.",
+          badge: "Published",
+          caption: "Michelle publishes from the top right. The striped draft canvas becomes an even production canvas.",
+          body: `
+            <div class="real-desktop">
+              ${realMenu("Browser", "n8n workflow published")}
+              ${n8nBrowser("published")}
+              ${realDock}
+            </div>
+          `
+        },
+        {
+          kicker: "Time skip",
+          title: "Michelle closes n8n and goes back to work.",
+          badge: "Automatic next time",
+          caption: "The time jump sits outside the n8n UI, so the audience understands the product is no longer on screen.",
+          body: timeJumpDesktop,
+          autoAdvanceMs: 1800
+        },
+        {
+          kicker: "Inbox",
+          title: "Michelle gets the draft automatically.",
+          badge: "Review and send",
+          caption: "The workflow does the assembly. Michelle reviews the generated draft, edits if needed, and sends.",
+          body: nextThursdayInbox
+        },
+        {
+          kicker: "Sent",
+          title: "Scout celebrates the saved routine.",
+          badge: "Keeps learning",
+          caption: "The automation saved the assembly work. Scout stays present, learns from what worked, and keeps looking for the next useful opportunity.",
+          body: sentUpdateDesktop
+        },
+        {
+          kicker: "More ideas",
+          title: "Scout asks if Michelle wants to see what else it noticed.",
+          badge: "Proactive",
+          caption: "This is the retention loop: after one useful automation, Scout keeps showing relevant next possibilities.",
+          body: moreIdeasDesktop
+        },
+        {
+          kicker: "Suggestion queue",
+          title: "Michelle can review, save, or dismiss each proposal.",
+          badge: "Choice and control",
+          caption: "Scout is useful without being pushy. Good ideas can become workflows or agents; bad ideas can be dismissed so Scout learns.",
+          body: ideaQueueDesktop
+        }
+      ];
+
+      let currentSlide = 0;
+      let currentDemo = 0;
+      let demoAutoTimer;
+
+      const body = document.querySelector("[data-slide-body]");
+      const kicker = document.querySelector("[data-slide-kicker]");
+      const number = document.querySelector("[data-slide-number]");
+      const slideTotal = document.querySelector("[data-slide-total]");
+      const demoKicker = document.querySelector("[data-demo-kicker]");
+      const demoTitle = document.querySelector("[data-demo-title]");
+      const demoBadge = document.querySelector("[data-demo-badge]");
+      const demoBody = document.querySelector("[data-demo-body]");
+      const demoCaption = document.querySelector("[data-demo-caption]");
+      const demoSteps = document.querySelector("[data-demo-steps]");
+      const demoPrev = document.querySelector("[data-demo-prev]");
+      const demoNext = document.querySelector("[data-demo-next]");
+
+      function renderSlide() {
+        const slide = slides[currentSlide];
+        kicker.textContent = slide.kicker;
+        number.textContent = String(currentSlide + 1);
+        slideTotal.textContent = String(slides.length);
+        body.innerHTML = slide.body;
+      }
+
+      function go(delta) {
+        currentSlide = Math.max(0, Math.min(slides.length - 1, currentSlide + delta));
+        renderSlide();
+      }
+
+      function renderDemo() {
+        window.clearTimeout(demoAutoTimer);
+        const screen = demoScreens[currentDemo];
+        demoKicker.textContent = screen.kicker;
+        demoTitle.textContent = screen.title;
+        demoBadge.textContent = screen.badge;
+        demoBody.innerHTML = screen.body;
+        demoCaption.textContent = screen.caption;
+        demoPrev.disabled = currentDemo === 0;
+        demoNext.textContent = currentDemo === demoScreens.length - 1 ? "Restart" : "Next";
+        demoSteps.innerHTML = demoScreens.map((item, index) => `
+          <button class="demo-step-button ${index === currentDemo ? "active" : ""}" type="button" data-demo-step="${index}" title="${item.kicker}: ${item.title}">
+            <small>${index + 1}</small>
+            <strong>${item.title}</strong>
+          </button>
+        `).join("");
+        if (screen.autoAdvanceMs) {
+          demoAutoTimer = window.setTimeout(() => {
+            if (demoScreens[currentDemo] === screen) goDemo(1);
+          }, screen.autoAdvanceMs);
+        }
+      }
+
+      function goDemo(delta) {
+        if (currentDemo === demoScreens.length - 1 && delta > 0) {
+          currentDemo = 0;
+        } else {
+          currentDemo = Math.max(0, Math.min(demoScreens.length - 1, currentDemo + delta));
+        }
+        renderDemo();
+      }
+
+      document.querySelector("[data-prev]").addEventListener("click", () => go(-1));
+      document.querySelector("[data-next]").addEventListener("click", () => go(1));
+      body.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-go-demo]")) return;
+        setView("demo");
+      });
+      demoPrev.addEventListener("click", () => goDemo(-1));
+      demoNext.addEventListener("click", () => goDemo(1));
+      demoBody.addEventListener("click", (event) => {
+        const toggle = event.target.closest("[data-toggle-rule]");
+        if (toggle) {
+          toggle.classList.toggle("active");
+          const state = toggle.querySelector("strong");
+          state.textContent = toggle.classList.contains("active") ? "On" : "Off";
+          return;
+        }
+        if (event.target.closest("[data-close-to-questions]")) {
+          currentSlide = slides.length - 1;
+          renderSlide();
+          setView("deck");
+          return;
+        }
+        if (event.target.closest("[data-demo-next]")) goDemo(1);
+      });
+      demoSteps.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-demo-step]");
+        if (!button) return;
+        currentDemo = Number(button.dataset.demoStep);
+        renderDemo();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        const activeView = document.querySelector("[data-view].active")?.dataset.view;
+        if (activeView === "deck") {
+          if (event.key === "ArrowRight" || event.key === " ") go(1);
+          if (event.key === "ArrowLeft") go(-1);
+        }
+        if (activeView === "demo") {
+          if (event.key === "ArrowRight" || event.key === " ") goDemo(1);
+          if (event.key === "ArrowLeft") goDemo(-1);
+        }
+      });
+
+      const viewButtons = document.querySelectorAll("[data-view-button]");
+      const views = document.querySelectorAll("[data-view]");
+
+      function setView(target) {
+        viewButtons.forEach((item) => item.classList.toggle("active", item.dataset.viewButton === target));
+        views.forEach((view) => view.classList.toggle("active", view.dataset.view === target));
+      }
+
+      viewButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setView(button.dataset.viewButton);
+        });
+      });
+
+      renderSlide();
+      renderDemo();
+    </script>
+  </body>
+</html>
